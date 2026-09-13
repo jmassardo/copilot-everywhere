@@ -1,0 +1,9 @@
+# Floor-pinned rather than exact-pinned on purpose: students show up with
+# whatever Python they have, and exact pins force source builds when no
+# matching wheel exists (pydantic-core on Python 3.14 is the usual casualty).
+fastapi>=0.115
+uvicorn[standard]>=0.34
+pydantic>=2.10
+pytest>=8.3
+httpx>=0.28
+ruff>=0.8
