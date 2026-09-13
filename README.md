@@ -50,18 +50,20 @@ The PPTX build maps content onto real template layouts and placeholders, so the 
 
 ## The lab
 
-**[`lab/`](lab/)** — 90 minutes, four exercises, one per persona. Start at the [syllabus](lab/README.md).
+**[`lab/`](lab/)** — 90 minutes. Attendees pick **one persona track** and do five exercises inside it. Start at the [syllabus](lab/README.md).
 
-| Exercise | Persona | Surface |
+| Track | Who | Surface emphasis |
 |---|---|---|
-| [1](lab/exercises/01-staff-engineer-cli.md) | Senior / staff engineer | CLI |
-| [2](lab/exercises/02-platform-context.md) | Platform / DevEx lead | Context configuration + MCP |
-| [3](lab/exercises/03-dev-adjacent-backlog.md) | Dev-adjacent (PM / BA) | github.com + coding agent |
-| [4](lab/exercises/04-maintainer-review.md) | Maintainer / reviewer | Code review |
+| [Engineer](lab/tracks/engineer.md) | Senior / staff engineer | Copilot CLI |
+| [Platform](lab/tracks/platform.md) | Platform / DevEx lead | Configuration + MCP |
+| [Product](lab/tracks/product.md) | PM, BA, support lead, TPM | github.com + coding agent |
+| [Maintainer](lab/tracks/maintainer.md) | Reviewer, maintainer, on-call | Code review + CLI |
 
-Every exercise works against the included [sample app](sample-app/) **or** the student's own repository.
+Every exercise works against the included [sample app](sample-app/) **or** the student's own repository. First three exercises in each track are core; four and five are for fast movers.
 
-Exercises are ordered deliberately: exercise 2 produces the configuration that 3 and 4 consume, so students watch their own context work change the agent's output.
+**Every exercise is work that persona actually does.** No PM writes a unit test to prove a point — that teaches the wrong lesson twice, and it undercuts the talk's whole argument about meeting people where they work.
+
+The tracks also interlock: the Platform track writes the context configuration that the Engineer and Maintainer tracks then consume, which makes "context is the product" something attendees demonstrate to each other rather than something you assert.
 
 Facilitators: [facilitator-guide.md](lab/facilitator-guide.md).
 
@@ -84,8 +86,9 @@ Fork it. The parts most worth keeping when you do:
 
 - The **routing matrix** — it turns a feature tour into a decision tool
 - The **"when not to" block** — it's where credibility with a senior audience comes from
+- The **track structure** — role-appropriate exercises, not one rotation for everybody
 - The sample app's **seams 1 and 4** — ambiguous convention and untested module with a real bug carry most of the lab's weight
-- Exercise 2's **before/after** — the only part that makes context resolution visible rather than asserted
+- The Platform track's **before/after** — the only part that makes context resolution visible rather than asserted
 
 Re-verify the context consumption matrix before every delivery. Support for these artifacts changes fast enough that a slide you made a month ago will have a wrong cell.
 

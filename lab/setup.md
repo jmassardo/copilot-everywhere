@@ -1,6 +1,19 @@
 # Setup & Baseline
 
-**Timebox in class: 10 minutes.** That is only enough time to *verify* a working setup, not to build one. Do the install section before you arrive.
+**Timebox in class: 10 minutes.** That is only enough time to *verify* a working setup, not build one. Do the install section before you arrive.
+
+---
+
+## First: pick your track
+
+You'll do one [persona track](README.md#pick-your-track), not all four. What you need to install depends on which:
+
+| Track | Needs |
+|---|---|
+| **Product** | A browser and a GitHub account. That's genuinely it. |
+| **Maintainer** | Browser + Copilot CLI (exercise 3 only) |
+| **Engineer** | Copilot CLI + an IDE with agent mode + Python |
+| **Platform** | IDE with agent mode + Python, MCP optional |
 
 ---
 
@@ -8,23 +21,27 @@
 
 ### 1. Copilot access
 
-You need an active Copilot subscription on your GitHub account. Confirm at [github.com/settings/copilot](https://github.com/settings/copilot).
+Active Copilot subscription on your GitHub account. Confirm at [github.com/settings/copilot](https://github.com/settings/copilot).
+
+**All tracks need this.**
 
 ### 2. Copilot CLI
 
-Install and authenticate. Exercise 1 is CLI-only and there's no fallback.
+**Engineer and Maintainer tracks.** Install and authenticate:
 
 ```bash
 copilot --version
 ```
 
-If that fails, follow the [CLI install docs](https://docs.github.com/copilot) and come back.
+If that fails, follow the [CLI install docs](https://docs.github.com/copilot) and come back. The Engineer track has no fallback without it.
 
 ### 3. IDE with Copilot
 
-VS Code, a JetBrains IDE, or equivalent — with agent mode available, not just completions. Exercise 2 needs to show you which context files got loaded.
+**Engineer and Platform tracks.** VS Code, a JetBrains IDE, or equivalent — with agent mode available, not just completions. The Platform track needs to show you which context files got loaded.
 
-### 4. Python 3.11+ (Track A only)
+### 4. Python 3.11+
+
+**Engineer, Platform, and Maintainer tracks** (sample app only).
 
 ```bash
 python3 --version
@@ -66,7 +83,9 @@ uvicorn app.main:app --reload
 
 ### Fork it
 
-Exercises 3 and 4 need somewhere to open pull requests. Fork the repo to your own account and work from your fork.
+The Product and Maintainer tracks need somewhere to open pull requests. Fork the repo to your own account and work from your fork.
+
+> **Product track:** you only need the fork. You never have to clone or install anything — exercises 1 through 5 all happen in a browser.
 
 ---
 
@@ -79,29 +98,30 @@ Pick a repository where **all** of these are true:
 - [ ] You can push branches and open PRs
 - [ ] Nothing in it is so sensitive that you'd hesitate to let an agent read it
 
-Then find your raw material — you'll need one of each:
+Then find your raw material. What you need depends on your track:
 
-| Exercise | What to find |
+| Track | What to find |
 |---|---|
-| 1 | A lint rule you could turn on, or a deprecated API used in 3+ files |
-| 2 | A convention your team follows that **isn't written down anywhere** |
-| 3 | A real feature request vague enough to need decomposition |
-| 4 | An open PR, or one you can create |
+| **Engineer** | A lint rule you could enable or a deprecated API in 3+ files; a module with logic and no tests |
+| **Platform** | A convention your team enforces socially but never wrote down |
+| **Product** | Your real unsorted feedback, and the vaguest request in your backlog |
+| **Maintainer** | An open PR, your issue backlog, and a recent incident you can reconstruct |
 
-> If you can't find raw material for an exercise, switch to Track A for that one. Mixing tracks is fine.
+> If you can't find raw material for an exercise, switch to Track A for that one. Mixing is fine.
 
 ---
 
 ## Baseline checklist
 
-Run this before the clock starts. Every box checked:
+Run this before the clock starts:
 
-- [ ] `copilot --version` works
-- [ ] IDE opens the repo and Copilot agent mode responds
-- [ ] github.com loads and you can see your fork
-- [ ] Track A: `pytest -q` shows 13 passed
-- [ ] Track A: `ruff check .` is clean
-- [ ] Track B: your test suite passes on a clean checkout
+- [ ] You've picked a track
+- [ ] `copilot --version` works *(Engineer, Maintainer)*
+- [ ] IDE opens the repo and Copilot agent mode responds *(Engineer, Platform)*
+- [ ] github.com loads and you can see your fork *(all tracks)*
+- [ ] `pytest -q` shows 13 passed *(sample app)*
+- [ ] `ruff check .` is clean *(sample app)*
+- [ ] Your own test suite passes on a clean checkout *(own repo)*
 - [ ] You're on a branch, not `main`
 
 ---
@@ -123,13 +143,15 @@ sample-app/
   tests/
     test_orders.py       7 tests
     test_customers.py    6 tests
+  FEEDBACK.md            12 unsorted support tickets and Slack messages
 ```
 
-Four things are true about this codebase, and each one matters later:
+Five things are true about this codebase, and each one matters to at least one track:
 
-1. **The two routers handle errors incompatibly.** Both styles are present, so an agent pattern-matching this repo has no way to know which one you want. (Exercise 2)
-2. **`pricing.py` has no tests.** It also has a real bug. (Exercises 3 and 4)
-3. **`datetime.utcnow()` is deprecated and used in three files.** (Exercise 1, stretch)
-4. **There is no Copilot configuration whatsoever.** No instructions, no prompt files, no MCP. (Exercise 2 fixes this)
+1. **The two routers handle errors incompatibly.** Both styles are present, so an agent pattern-matching this repo can't know which one you want. *(Platform, Maintainer)*
+2. **`pricing.py` has no tests.** It also has a real boundary bug. *(Engineer, Product)*
+3. **`datetime.utcnow()` is deprecated and used in three files.** *(Engineer)*
+4. **`FEEDBACK.md` is twelve unsorted complaints**, several sharing one root cause. *(Product, Maintainer)*
+5. **There is no Copilot configuration whatsoever.** *(Platform fixes this)*
 
 None of that is accidental.

@@ -1,128 +1,132 @@
 # Copilot Everywhere — Lab Syllabus
 
 **Duration:** 90 minutes
-**Format:** Hands-on, four exercises, one per persona
+**Format:** Pick one persona track. Five exercises, all appropriate to that role.
 **Works with:** the included [sample app](../sample-app/) *or* your own repository
+
+---
+
+## Pick your track
+
+You do **one** track, not all four. Choose the one closest to how you actually spend your day.
+
+| Track | You are | Surface emphasis |
+|---|---|---|
+| **[Engineer](tracks/engineer.md)** | Senior / staff engineer | Copilot CLI |
+| **[Platform](tracks/platform.md)** | Platform / DevEx lead | Configuration + MCP |
+| **[Product](tracks/product.md)** | PM, BA, support lead, TPM | github.com + coding agent |
+| **[Maintainer](tracks/maintainer.md)** | Reviewer, maintainer, on-call | Code review + CLI |
+
+Each track has five exercises. The **first three are core** — do those. Four and five exist so fast movers don't run out, and so you have something to take home.
+
+> **Not sure?** Pick the track matching the work you'd most like to get time back on. If you split your week evenly between two, take the one you're *worse* at.
+
+---
+
+## Why tracks instead of a shared sequence
+
+An earlier version of this lab walked everyone through one exercise per persona. It had a fatal flaw: it made product managers write tests and engineers write release notes.
+
+That teaches the wrong lesson twice. The PM concludes this stuff isn't for them. The engineer concludes the PM exercises are filler.
+
+**Copilot's actual claim is that it meets people where they already work.** A lab should do the same. So every exercise in every track is work that persona genuinely does.
 
 ---
 
 ## What this lab is
 
-The talk argues that most "Copilot doesn't work for this" complaints are **routing mistakes** — the right work sent to the wrong surface. This lab makes you do the routing yourself, four times, as four different people.
+The talk argues that most "Copilot doesn't work for this" complaints are **routing mistakes** — the right work sent to the wrong surface. This lab makes you route your own work, five times, in your own role.
 
-You will not use the same surface twice.
-
-## What this lab is not
-
-Not a prompt-writing workshop. Not a tour of every feature. You will spend most of your time on two questions:
+Two questions run through every exercise:
 
 1. Which surface does this work belong on?
 2. **How would I know if it came back right?**
 
-That second question is the spine of the whole lab. Every exercise below has an explicit, checkable *done* condition — a passing test, a lint result, a diff you can read. If you finish an exercise and can't point at evidence, you haven't finished it.
+That second one is the spine. Every exercise has an explicit, checkable *done* condition. If you finish and can't point at evidence, you haven't finished.
 
 ---
 
 ## Prerequisites
 
-| Requirement | Notes |
+| Requirement | Needed for |
 |---|---|
-| GitHub account with Copilot enabled | Any paid tier |
-| Copilot CLI installed and authenticated | Exercise 1 is CLI-only |
-| An IDE with Copilot (VS Code or equivalent) | Agent mode available |
-| Access to github.com | Exercises 3 and 4 |
-| Python 3.11+ | Only if using the sample app |
-| A repo you can open PRs against | Only if using your own repo |
+| GitHub account with Copilot enabled | All tracks |
+| Access to github.com | All tracks |
+| Copilot CLI, installed and authenticated | **Engineer**, Maintainer (ex. 3) |
+| IDE with Copilot agent mode | **Platform**, Engineer |
+| Python 3.11+ | Sample app only |
+| A repo you can open PRs against | Own-repo track only |
 
-Full setup and verification steps: **[setup.md](setup.md)**. Do this *before* the lab starts — setup is timeboxed to 10 minutes and it is not enough time to install from scratch.
+Full setup: **[setup.md](setup.md)**. Do it **before** the lab — in-class setup is 10 minutes, and that's verification time, not install time.
+
+> **The product track needs the least.** If you're a PM, a browser and a GitHub account carry you through all five exercises. That isn't a limitation of the track — it's the point of it.
 
 ---
 
-## Choose your track
-
-Every exercise works two ways. Pick one at the start and stay with it.
+## Choose your material
 
 ### Track A — the sample app
-A small FastAPI orders service with deliberately seeded problems: an inconsistent error-handling pattern, an untested pricing module with a real boundary bug, a deprecated API used across several files, and no Copilot configuration of any kind.
+A small FastAPI orders service with deliberately seeded problems: an ambiguous error convention, an untested pricing module with a real boundary bug, a deprecated API used across several files, twelve unsorted customer complaints, and no Copilot configuration at all.
 
-Choose this if you can't use company code in a lab, you want predictable results, or you want to compare outcomes with the person next to you.
+Pick this if you can't use company code in a lab, want predictable results, or want to compare with your neighbor.
 
 ### Track B — your own repo
-Every exercise lists a "**Your repo**" variant describing the *shape* of work to find rather than the exact task.
+Every exercise has a "**Your repo**" variant describing the *shape* of work to find. Better learning, messier failure modes. Both are true at once.
 
-Choose this if you have a repo you know well and can open PRs against. The learning is better. The failure modes are messier. Both of those are true at once.
-
-> **Track B guardrail:** work on a branch, don't run agents against production config, and don't wire MCP servers to systems you aren't authorized to connect. If you have to think about whether it's okay, use Track A for that exercise.
+> **Guardrail:** work on a branch, don't point agents at production config, and don't wire MCP servers to systems you aren't authorized to connect. If you have to think about whether it's okay, use Track A for that exercise.
 
 ---
 
 ## Schedule
 
-| Time | Block | Persona | Surface |
-|---|---|---|---|
-| 0:00 | [Setup & baseline](setup.md) | — | — |
-| 0:10 | [Exercise 1](exercises/01-staff-engineer-cli.md) | Senior / staff engineer | **CLI** |
-| 0:28 | [Exercise 2](exercises/02-platform-context.md) | Platform / DevEx lead | **Context config** |
-| 0:48 | [Exercise 3](exercises/03-dev-adjacent-backlog.md) | Dev-adjacent (PM / BA) | **github.com + coding agent** |
-| 1:08 | [Exercise 4](exercises/04-maintainer-review.md) | Maintainer / reviewer | **Code review + PR** |
-| 1:23 | Debrief | — | — |
+| Time | Block |
+|---|---|
+| 0:00 | [Setup & baseline verification](setup.md) |
+| 0:10 | Exercise 1 |
+| 0:25 | Exercise 2 |
+| 0:40 | Exercise 3 |
+| 0:55 | Exercise 4 *(or go deeper on 1–3)* |
+| 1:10 | Exercise 5 *(or go deeper on 1–3)* |
+| 1:22 | Debrief — **all tracks together** |
 
-Exercises are ordered deliberately. Exercise 2 produces the configuration that exercises 3 and 4 consume — you will watch your own context work change the agent's output. **Don't skip 2.**
-
----
-
-## The exercises
-
-### 1. Cross-cutting change from the terminal
-*Senior / staff engineer · 18 min · CLI*
-
-Turn on a lint rule that the codebase doesn't currently satisfy, then use the CLI to fix the fallout across every affected file. Use the test suite as the verification signal.
-
-**Done when:** `ruff check .` is clean and all tests still pass.
-
-### 2. Build the context supply chain
-*Platform / DevEx lead · 20 min · Configuration + MCP*
-
-The repo has no Copilot configuration. Write repo instructions that encode a convention the codebase itself contradicts, then prove the configuration changed the output. Optionally wire an MCP server.
-
-**Done when:** you can show the same prompt producing different output before and after, and explain why.
-
-### 3. Fuzzy request to delegated pull request
-*Dev-adjacent · 20 min · github.com + coding agent*
-
-Start from a vague stakeholder request. Decompose it into issues grounded in the actual codebase, then assign one to the coding agent and review what comes back.
-
-**Done when:** an agent-authored PR exists and you have written a real review of it.
-
-### 4. Review at volume
-*Maintainer / reviewer · 15 min · Code review*
-
-Review the PR from exercise 3 — plus a deliberately flawed one. Find what the agent review caught, what it missed, and decide what your team would actually automate.
-
-**Done when:** you can name one thing the automated review caught and one thing it missed.
+Timings are per-track guidance; exercises run 12 to 18 minutes. **Three finished properly beats five rushed.**
 
 ---
 
-## Debrief questions
+## What each track covers
 
-Save 7 minutes. These are the questions worth arguing about:
+**[Engineer](tracks/engineer.md)** — cross-cutting migration · characterization tests on untested code · Copilot in a shell pipeline · debugging from a reproduction · packaging it into a reusable agent
 
-1. Which exercise did the tool do best on, and what did that task have in common with the others it struggled with?
-2. Where did you spend more time verifying than you would have spent just doing the work?
-3. What did exercise 2's configuration change about exercises 3 and 4? Was it worth writing?
-4. Which of these four workflows would survive contact with your actual team on Monday — and what would have to be true first?
-5. What's the first thing you'd automate at home, and how would you know it was working?
+**[Platform](tracks/platform.md)** — proving the unwritten-knowledge gap exists · path-scoped instructions · prompt files a colleague can run cold · custom agents with tool restrictions · MCP
+
+**[Product](tracks/product.md)** — answering your own codebase questions · triaging raw feedback into themes · specifying agent-ready issues and sorting bugs from decisions · delegating and accepting against acceptance criteria · release notes and stakeholder comms
+
+**[Maintainer](tracks/maintainer.md)** — scoring an automated review honestly · backlog triage at volume · narrowing an incident · writing your team's review automation policy · release risk assessment
+
+---
+
+## Debrief — everyone together
+
+Save 8 minutes. This is the only part where tracks hear each other, and it's where the lab's argument closes.
+
+1. **Round the room by track:** what was the single most useful thing your track did?
+2. Where did you spend more time verifying than you'd have spent just doing the work?
+3. **For the platform track:** did anyone else's results change because of configuration you wrote?
+4. What did the tool do *worst* at — and was that a capability limit or a routing mistake?
+5. Which of these workflows survives contact with your actual team on Monday, and what has to be true first?
+
+> Question 3 is the one to protect. The platform track writes the context; every other track consumes it. When that connection lands out loud, "context is the product" stops being a slide.
 
 ---
 
 ## If you finish early
 
-- Run the same exercise on a *different* surface and compare. Exercise 1 in agent mode instead of the CLI is the most instructive.
-- Deliberately break your exercise 2 instructions — write a convention that's wrong — and watch the agent confidently propagate it. This is the "stale instructions are worse than no instructions" lesson, and experiencing it is worth more than hearing it.
-- Try exercise 3's decomposition from the Copilot mobile app.
+- **Run an exercise on a different surface** and compare. The engineer track's exercise 1 in agent mode instead of the CLI is the most instructive swap available.
+- **Break your configuration deliberately.** Write an instruction that's subtly wrong and watch an agent confidently propagate it. Experiencing "stale instructions are worse than none" beats hearing it.
+- **Try another track's exercise 1.** Fifteen minutes in someone else's shoes is the cheapest empathy in the building.
 
 ---
 
 ## Facilitators
 
-See **[facilitator-guide.md](facilitator-guide.md)** for timing checkpoints, expected failure points, room-management notes, and what to do when someone's environment is broken.
+See **[facilitator-guide.md](facilitator-guide.md)** for track balancing, timing checkpoints, expected failure points, and what to do when someone's environment is broken.

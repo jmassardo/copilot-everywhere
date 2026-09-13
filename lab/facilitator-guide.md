@@ -1,22 +1,47 @@
 # Facilitator Guide
 
-Everything you need to run the 90-minute lab, including what breaks and when.
+Everything needed to run the 90-minute lab, including what breaks and when.
+
+---
+
+## The structural decision
+
+Attendees pick **one track** and do five exercises inside it. They do not rotate.
+
+This is deliberate, and worth defending out loud if asked. The earlier one-exercise-per-persona design made PMs write tests and engineers write release notes — teaching the wrong lesson twice. Copilot's claim is that it meets people where they work. The lab has to do the same or it undercuts the talk.
+
+**Consequence for you:** four things happen at once in the room. Plan for it.
 
 ---
 
 ## Room shape
 
-Works for 8 to 60 people. Above ~30 you need a second floater, because setup failures cluster in the first fifteen minutes and one person cannot unblock them all.
+Works for 8 to 60. Above ~30 you want a second floater — setup failures cluster in the first fifteen minutes and one person can't unblock them all.
 
-**Ideal:** tables of 4–6. Exercises 2 and 4 have compare-with-your-neighbor beats that fall flat when people are in rows.
+**Seat by track.** The single highest-leverage thing you control. Put a "Product" sign on one table, "Engineer" on another. It makes peer unblocking work and makes the debrief coherent.
+
+### Expected distribution
+
+Most rooms skew heavily to Engineer. Budget accordingly:
+
+| Track | Typical share | Watch for |
+|---|---|---|
+| Engineer | 40–60% | May need two tables |
+| Maintainer | 15–25% | Overlaps with Engineer; let people move |
+| Platform | 10–20% | Small but high-influence |
+| Product | 5–20% | **Often under-attended and over-valuable** |
+
+> **If nobody picks Product:** push one or two people there — especially engineering managers, or anyone who says "I don't really write code anymore." That track has the highest surprise factor in the room and its results land hardest in the debrief.
+
+> **If Platform is empty:** you run it. Do exercise 1 live from the front during setup and share the instructions file. Otherwise debrief question 3 has no answer.
 
 ---
 
 ## Pre-lab, one week out
 
-Send the [setup instructions](setup.md) with an explicit warning that **in-class setup is 10 minutes and that is verification time, not install time.**
+Send [setup.md](setup.md) with the track table and ask people to **pick a track in advance.** They arrive with the right tools installed, and you get a headcount for seating.
 
-Ask people to reply confirming `copilot --version` works. The replies you *don't* get tell you where your morning is going.
+Ask for a reply confirming `copilot --version` works — Engineer and Maintainer have no fallback without it. The replies you *don't* get tell you where your morning is going.
 
 ---
 
@@ -24,9 +49,10 @@ Ask people to reply confirming `copilot --version` works. The replies you *don't
 
 - [ ] Sample app cloned, `pytest -q` green on your machine
 - [ ] Your own fork ready to demo from
-- [ ] A completed PR for each exercise, parked in tabs as a fallback
-- [ ] Know your org's MCP policy — someone will ask whether they can wire up an internal server
-- [ ] Confirm the coding agent is available to attendees; if not, exercise 3 needs its fallback path announced up front
+- [ ] A completed artifact for each track's exercise 1, parked in tabs as fallback
+- [ ] Know your org's MCP policy — someone will ask
+- [ ] Confirm the coding agent is available to attendees; if not, announce the Product exercise-4 fallback up front
+- [ ] Track signs on tables
 
 ---
 
@@ -34,84 +60,95 @@ Ask people to reply confirming `copilot --version` works. The replies you *don't
 
 | Clock | Should be | If behind |
 |---|---|---|
-| 0:10 | Everyone has a green baseline | Pair the broken with the working. Don't debug one laptop while 40 people wait. |
-| 0:28 | Exercise 1 verified | Cut the composability step to a demo you run from the front |
-| 0:48 | Exercise 2 instructions written | Skip the MCP step entirely — it's already marked optional |
-| 1:08 | Exercise 3 PR delegated | Have people review *your* pre-made agent PR instead of waiting for theirs |
-| 1:23 | Exercise 4 scored | Cut the stretch; go straight to the policy questions |
+| 0:10 | Green baseline, everyone seated by track | Pair broken with working. Don't debug one laptop while 40 people wait. |
+| 0:40 | Everyone into exercise 3 | Announce 4 and 5 are optional — many will have guessed already |
+| 1:10 | People on 4, 5, or deepening | Start collecting debrief-worthy findings so you're not cold-starting |
+| 1:22 | Debrief begins | **Stop people mid-exercise.** Protect this. |
 
-**Protect the debrief.** It's the only part where people hear each other's results, and it's the first thing that gets eaten. If you're at 1:25 with people mid-exercise, stop them.
-
----
-
-## The single most important framing
-
-Say this at the start, in roughly these words:
-
-> "Every exercise has a checkable done condition — a passing test, a clean lint run, a diff you can read. That's not lab hygiene. That's the actual lesson. The reason you can safely give an agent this much autonomy is that you can cheaply tell whether it was right. Teams with good verification infrastructure can delegate far more than teams without it, using the exact same tool."
-
-If people leave with only that, the lab worked.
+The debrief is the only part where tracks hear each other, and the first thing to get eaten. Guard it.
 
 ---
 
-## Per-exercise notes
+## The framing to open with
 
-### Exercise 1 — CLI
+Say this, roughly:
 
-**Where people get stuck:** CLI not authenticated. Catch this in setup or you'll lose them for the full 18 minutes with no fallback.
+> "Every exercise has a checkable done condition — a passing test, a clean lint run, an acceptance criterion you wrote. That's not lab hygiene, that's the lesson. The reason you can safely give an agent this much autonomy is that you can cheaply tell whether it was right. Teams with good verification can delegate far more than teams without it, using the identical tool."
 
-**The beat to call out loudly:** when someone's agent runs the tests, reads a failure, and fixes itself — get them to say it out loud to the room. Most people have never seen level-4 autonomy and it changes their mental model on the spot.
+Then the track framing:
 
-**Expected outcome:** nearly everyone succeeds. This exercise is deliberately the easy one — it builds confidence before exercise 2 gets conceptual.
+> "You're doing one track. You will not write code you wouldn't normally write. If you're a PM, you're doing PM work — I'm not going to make you write a unit test to prove a point."
 
-**Watch for:** people running `ruff --fix` and declaring victory. Redirect them; the point is the agent loop, not the autofixer.
+That second line reliably gets a laugh from people who've been burned by vendor labs, and it buys you their attention.
 
-### Exercise 2 — Context
+---
 
-**The hardest exercise to facilitate**, because the payoff is invisible if people rush step 1.
+## Per-track notes
 
-**Insist on the before/after.** People want to skip straight to writing instructions. Without the "before," step 3 proves nothing and the lesson evaporates.
+### Engineer
+**Most likely to succeed unaided.** Exercise 1 is deliberately easy — it builds confidence before anything conceptual.
 
-**The moment that lands:** two people at the same table got *different* error conventions from the identical prompt on the identical repo in step 1. Seed this — walk the room during step 1 and find a mismatched pair, then have them announce it.
+**The beat to amplify:** when someone's agent runs tests, reads a failure, and fixes itself, have them say it out loud to the room. Most people have never seen level-4 autonomy and it rewrites their mental model on the spot.
 
-**Watch for:** 200-line instructions files. Call it out warmly. "Which 160 of those lines change what the agent does?"
+**Watch for:** people running `ruff --fix` and declaring victory. Redirect — the point is the agent loop, not the autofixer.
 
-**If someone's output doesn't change in step 3:** filename and path first, fresh session second, actionability third. In that order, it's almost always the first one.
+**Exercise 2 is the sleeper.** Characterization testing to *discover* a bug rather than fix a known one is a technique most engineers haven't used. If the room is strong, spend extra time here.
 
-### Exercise 3 — Dev-adjacent
+### Platform
+**Hardest to facilitate**, because the payoff is invisible if people rush exercise 1's "before."
 
-**Announce the fallback up front** if the coding agent isn't available in your org, or you'll have people stuck at step 4 with no path.
+**Insist on the before/after.** People want to skip to writing instructions. Without the before, the proof step proves nothing.
 
-**Enforce the browser-only rule.** Engineers will drift into an IDE by reflex. The constraint is the lesson.
+**Seed the moment:** during exercise 1, find two people who got *different* error conventions from the identical prompt. Have them announce it. That's the whole argument, delivered by an attendee instead of by you.
 
-**The bug / decision sort is the highest-value five minutes in the lab.** Don't let it get rushed. If you're compressing, take time from step 1, not step 2.
+**Watch for:** 200-line instructions files. Warmly — "which 160 of those change what the agent does?"
 
-**Terminology:** use *dev-adjacent*, not "non-technical." If an attendee uses "non-technical," it's worth one gentle sentence — the distinction is real and it's operationally useful, not just polite.
+**Output didn't change?** Filename and path first, fresh session second, actionability third. It's almost always the first.
 
-### Exercise 4 — Review
+### Product
+**The track most likely to exceed expectations, and most likely to be under-attended.**
 
-**Expect the PR to be uncomfortable to write.** Some engineers resist committing deliberately bad code. Frame it as building a test fixture.
+**Enforce browser-only.** Engineers who wandered in will drift to an IDE by reflex. The constraint is the lesson.
 
-**The prediction step matters.** If people read the review results before writing down their own expectations, hindsight bias eats the exercise. Make them write first.
+**The bug-vs-decision sort in exercise 3 is the highest-value five minutes in the lab.** Don't let it get rushed. If compressing, take time from exercise 1.
 
-**Step 4's policy questions are the real deliverable.** This is the part attendees take back to their teams. Give it the full three minutes even if you're behind elsewhere.
+**Exercise 4's framing needs protecting:** they review against *acceptance criteria*, not code quality. If you see a PM squinting at syntax, redirect. "Does it do what you asked?" is the only question.
+
+**Terminology:** use *dev-adjacent*, never "non-technical." If an attendee says it, one gentle sentence is worth it — the distinction is operationally useful, not just polite.
+
+### Maintainer
+**Expect discomfort writing the deliberately bad PR.** Some engineers resist committing bad code. Frame it as building a test fixture.
+
+**The prediction step matters.** If people see the review output before writing their own expectations, hindsight bias eats the exercise. Make them write first.
+
+**Exercise 4 is the real deliverable** — it's what they take back to their team. Give it the full twelve minutes even if you're behind elsewhere.
+
+---
+
+## Cross-track connection
+
+If Platform and any other track are both running, engineer this moment:
+
+Have a Platform attendee share their `.github/copilot-instructions.md` with an Engineer or Maintainer attendee mid-lab. The Maintainer track's exercise 1 explicitly checks whether the error-convention mismatch got flagged — **with instructions it usually does, without it usually doesn't.**
+
+That's the most convincing demonstration in the entire lab, and it happens between two attendees rather than from the front.
 
 ---
 
 ## Expected failure points, ranked
 
-1. **Copilot CLI not installed or authenticated** — by far the most common. Only fixable before the lab.
-2. **Python version issues** — `pydantic` source builds on 3.14. The repo's floor-pinned requirements handle this; people using a stale fork will hit it.
-3. **Coding agent not enabled** for the org — affects exercise 3 step 4.
-4. **Corporate proxy blocking MCP** — exercise 2 step 5 is optional for exactly this reason.
-5. **People using their own repo pick one that's too large** — agent stalls, they conclude the tool is bad. Redirect to a subdirectory.
+1. **Copilot CLI not installed or authenticated** — by far the most common. Only fixable before the lab. Fallback: move them to Product, which needs none of it.
+2. **Python version issues** — `pydantic` source-builds on 3.14. This repo's floor-pinned requirements handle it; people on a stale fork hit a Rust compile error.
+3. **Coding agent not enabled** for the org — hits Product exercise 4 and Engineer stretch work.
+4. **Corporate proxy blocking MCP** — Platform exercise 5, which is why it's last and optional.
+5. **Own-repo attendees picking something too large** — agent stalls, they conclude the tool is bad. Redirect to a subdirectory.
 
 ---
 
 ## Questions you will get
 
 **"Which model should we be using?"**
-Redirect to context. The gap between teams is almost never the model — it's what their tools can see. Exercise 2 is the evidence.
+Redirect to context. The gap between teams is almost never the model. The Platform track is the evidence.
 
 **"How do we stop people rubber-stamping agent PRs?"**
 Verification infrastructure, not policy. If tests and CI catch bad changes, rubber-stamping is survivable. If they don't, that problem predates Copilot.
@@ -120,24 +157,27 @@ Verification infrastructure, not policy. If tests and CI catch bad changes, rubb
 It changes what's scarce. When producing code gets cheaper, deciding what to build and verifying whether it's right become the bottleneck. Most orgs aren't staffed for that shift.
 
 **"What about juniors?"**
-The risk isn't that they use it. It's using level-4 autonomy before they can evaluate level-4 output. Pair the autonomy ladder to the experience ladder deliberately.
+The risk isn't that they use it — it's using level-4 autonomy before they can evaluate level-4 output. Pair the autonomy ladder to the experience ladder deliberately.
 
 **"Can we wire up our internal systems?"**
-Yes, and treat every MCP server like a new integration with production data access — because that's what it is. Scope permissions, audit reach, don't let individuals connect arbitrary servers to internal systems unreviewed.
+Yes, and treat every MCP server as a new integration with production data access. Scope permissions, audit reach, don't let individuals connect arbitrary servers unreviewed.
+
+**"Why didn't I get to do the other tracks?"**
+The materials are public — all four are in the repo. Point them at another track's exercise 1 as homework.
 
 ---
 
-## If you're running the talk and lab together
+## Running talk and lab together
 
-The lab assumes the talk's vocabulary — routing, the autonomy ladder, the four layers, cheap verification. If you're running both, skip the concept framing in each exercise and reference the talk directly.
+The lab assumes the talk's vocabulary: routing, the autonomy ladder, the four layers, cheap verification. Running both back to back, skip the concept framing in each track and reference the talk directly.
 
-If the lab is standalone, the exercises carry enough context on their own, but budget an extra 5 minutes up front for the routing matrix and the verification thesis. Take it from exercise 4's stretch.
+Standalone, the tracks carry enough context on their own — but budget 5 extra minutes up front for the routing matrix and the verification thesis. Take it from exercise 5.
 
 ---
 
 ## After
 
-Ask for two things in the room before people leave:
+Ask for two things before people leave:
 
 1. **One workflow they're changing on Monday.** Specific, not aspirational.
-2. **One thing that didn't work.** You'll learn more from these than from the positive feedback, and it tells you which exercise to rewrite.
+2. **One thing that didn't work.** You'll learn more from these than from the praise, and it tells you which exercise to rewrite.
