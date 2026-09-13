@@ -358,6 +358,8 @@ Four personas. Four different surfaces. And critically — **one codebase.** Sam
 
 Same three beats for each one. What's the job they're *actually* trying to do — not the feature, the job. Then a live demo. Then we go back to the matrix and I tell you which cell and why.
 
+One note on the last one. I've put the data person last on purpose, because that persona is going to **complicate** everything I tell you in the first three. Hold that thought.
+
 ---
 
 ## Persona 1 — Senior / Staff Engineer
@@ -394,6 +396,34 @@ But the real reason, and the thing I want the terminal people in this room to he
 
 *[Point at matrix.]* Top left. You hold the context, synchronous.
 
+*[Beat — transition, don't treat this as a new topic.]*
+
+But I'm not done with this persona, because making the change is only half of what this person's day looks like. The other half is **what happens when they try to ship it.**
+
+[DEMO 5 — Agent review on the same PR · ~2 min]
+
+> **Setup:** push the branch from demo 4, open a PR, agent review has already run.
+> The continuity matters — this is *the change we just made*, not a different example.
+>
+> - Point at a genuine catch, something a human would plausibly miss
+> - **Point at something it missed.** Out loud.
+>
+> **Fallback:** a PR from the same change, already reviewed, in another tab.
+
+[STAGE: On the review comments.]
+
+The framing I'd push for here: this is **triage, not judgment.**
+
+It is not reviewing your code. It's doing the first pass so that when a human shows up, they're spending attention on design and correctness instead of "you forgot a null check" and "this variable name is misleading."
+
+*[Point at the miss.]*
+
+And it missed that. Which I'd rather show you than hide, because the version of this talk where the review catches everything is a version you'd correctly distrust.
+
+I'd argue this is the fastest ROI available to most teams, for an unglamorous reason: **review latency is usually the largest single chunk of dead time in your delivery pipeline, and nobody's optimizing it because it's nobody's job.**
+
+*[Point at matrix.]* And notice this one moved — middle row, right column. Same person, same piece of work, **different cell.** The routing changed the moment the work went from "I'm doing this" to "someone should check this."
+
 ---
 
 ## Persona 2 — Platform / DevEx Lead
@@ -407,7 +437,7 @@ Second persona. If you're in this role, this is your section.
 
 And the single highest-leverage thing available to you right now is MCP — because it's the mechanism by which Copilot stops being limited to what's in the repository.
 
-[DEMO 5 — MCP wire-up · ~4 min]
+[DEMO 6 — MCP wire-up · ~4 min]
 
 > **Setup:** an MCP server you can connect live. Observability, service catalog, ticketing, cloud provider — whatever's real for your demo.
 > **Beat 1:** ask a question it *cannot* answer. Let it fail or hedge.
@@ -454,7 +484,7 @@ And that distinction turns out to be operationally useful, not just polite. Dev-
 
 So — decomposing an ambiguous requirement into well-scoped work is genuinely hard, most people are bad at it, and when it's done badly it costs your engineering org more than any refactor.
 
-[DEMO 6 — Spec to backlog · ~4 min]
+[DEMO 7 — Spec to backlog · ~4 min]
 
 > **Setup:** Copilot app or github.com. A real, messy spec or doc.
 > **Beat 1:** decompose into an epic with issues.
@@ -493,44 +523,77 @@ Why this surface: no local environment. No clone. No terminal. The barrier to en
 
 ---
 
-## Persona 4 — Maintainer / Reviewer / On-Call
+## Persona 4 — DBA / Analytics Engineer
 **~6 minutes**
 
 [SLIDE 25 — Persona 4]
 
-Last persona. Two flavors of the same underlying problem.
+Last persona, and I saved it for last deliberately, because this one **complicates everything I've told you so far.**
 
-**The job:** either you're reviewing more code than you can physically read. Or it's two in the morning and something is broken.
+**The job:** you own a schema you didn't design, data you didn't generate, and a set of queries somebody wrote in a hurry three years ago before they left the company.
 
-What those have in common is that they're **asynchronous and interrupt-driven by nature.** Nobody schedules an incident. Nobody sits down at 9am and says "I'd like to review eleven pull requests now."
+[DEMO 8 — Schema, mismatch, query plan · ~4 min]
 
-[DEMO 7 — Pick one · ~4 min]
-
-> **Review path (safer):**
-> - PR with agent review comments
-> - Point at a genuine catch — something a human would plausibly miss
-> - **Point at something it missed.** Out loud. This is the most credibility you'll earn all session.
+> **Beat 1 — dotcom chat, no clone, no DB connection:**
+> "Read this schema. Explain the data model and what could go wrong at query time."
 >
-> **On-call path (higher risk, higher reward):**
-> - CLI + MCP against logs/metrics
-> - Investigate a real failure
-> - Reinforce: good at *narrowing*, bad at *concluding*
+> **Beat 2 — the money mismatch. This is the one.**
+> "Compare the schema with the application's models. Where do they disagree?"
+> Warehouse stores money as a float. Application uses integer cents.
 >
-> **Do not do both.** Pick one in rehearsal and commit.
+> **Beat 3 — `EXPLAIN QUERY PLAN`:**
+> Output says `SEARCH o USING AUTOMATIC COVERING INDEX`.
+> Add the index. The N+1 shape goes from ~0.96s to ~0.009s.
+>
+> **Fallback:** screenshots of all three beats.
 
-[STAGE: Back to deck.]
+[STAGE: On beat 2.]
 
-The framing I'd push for here, especially if you're a maintainer: this is **triage, not judgment.**
+*[Slow down here.]*
 
-It is not reviewing your code. It's doing the first pass so that when a human shows up, they're spending their attention on design and correctness instead of on "you forgot a null check" and "this variable name is misleading."
+The warehouse stores money as a floating-point number. The application uses integer cents. Somebody, somewhere, is doing a lossy conversion — and **neither codebase knows.**
 
-And I'd argue this is the fastest ROI available to most teams, for an unglamorous reason: review latency is usually the largest single chunk of dead time in your delivery pipeline, and nobody's optimizing it because it's nobody's job.
+You cannot see this bug from inside the application. You cannot see it from inside the database. It is only visible from a vantage point that can read both at once.
 
-*[Point at matrix.]* Middle row, right column. Repo context, asynchronous.
+*[Beat.]*
+
+That's not a clever AI trick. That's just what happens when the thing helping you isn't confined to the file you have open.
+
+[STAGE: On beat 3.]
+
+And look at what the database just told us. `AUTOMATIC COVERING INDEX`. SQLite is saying, in plain language, *"I had to build an index at runtime, every single time you ran this, because your schema didn't give me one."*
+
+The database has been filing a bug report against itself for three years and nobody read it.
+
+[SLIDE 26 — The persona that breaks the pattern]
+
+Now. Here's why this persona is last.
+
+*[Slow. This is the most intellectually honest moment in the talk.]*
+
+Every other persona today had a test suite. Run it, get the truth in one second. That's what made it safe to hand an agent a twelve-repo refactor.
+
+**This person doesn't have that.**
+
+A wrong query doesn't throw an exception. It doesn't turn CI red. It returns a **number.** A confident, plausible, correctly-formatted, completely wrong number — and that number goes into a dashboard that somebody makes a decision from.
+
+Software fails loudly. **Analysis fails quietly, and then gets presented to leadership.**
+
+*[Beat.]*
+
+So go back to what I told you forty minutes ago: cheap verification is what buys autonomy.
+
+Apply it honestly here, and it gives you an uncomfortable answer. **Where verification is expensive or absent — which is most of data work — you get *less* autonomy. Not more.** No matter how good the model gets.
+
+I want to be clear that I'm not walking back the thesis. I'm applying it. And the practical upshot is the useful part:
+
+> The highest-value thing a data team can build right now is not a prompt library. It's **reconciliation checks.** Those are what make everything else safe to hand off.
+
+*[Point at matrix.]* And this persona doesn't sit in one cell — dotcom for reading the schema, CLI for the query work. Which is the whole argument about routing, one more time.
 
 ---
 
-[SLIDE 26 — What just happened]
+[SLIDE 27 — What just happened]
 
 Okay. Step back.
 
@@ -557,11 +620,11 @@ And that's the next section. But first —
 # BLOCK 5 — The Cold Open, Revisited
 **0:56–1:00 · 4 minutes**
 
-[SLIDE 27 — The cold open revisited]
+[SLIDE 28 — The cold open revisited]
 
 Let's go see what happened to that issue.
 
-[DEMO 8 — Review the agent's PR · ~3 min]
+[DEMO 9 — Review the agent's PR · ~3 min]
 
 > **Critical delivery note: do NOT perform delight.** No "wow, look at that!" The room will smell it instantly and you'll lose everything you built in the "when not to" block.
 >
@@ -584,7 +647,7 @@ This part's good — and here's specifically why. *[Name it. Be concrete.]*
 
 This part I'd change. *[Name it.]*
 
-[SLIDE 28 — What the agent got wrong]
+[SLIDE 29 — What the agent got wrong]
 
 And I want to dwell on that second one for a second, because it's the most useful thing in this whole talk.
 
@@ -609,9 +672,9 @@ Which brings us to the most under-discussed part of this entire space.
 # BLOCK 6 — The Context Supply Chain
 **1:00–1:13 · 13 minutes**
 
-[SLIDE 29 — Section header: The context supply chain]
+[SLIDE 30 — Section header: The context supply chain]
 
-[SLIDE 30 — The gap]
+[SLIDE 31 — The gap]
 
 Here's my honest read on where the collective knowledge is right now.
 
@@ -629,7 +692,7 @@ I want to be explicit about a constraint I'm putting on this section, because it
 
 What almost nobody covers — and what actually determines whether your configuration works — is **how each surface consumes these artifacts.** That's the whole section.
 
-[SLIDE 31 — The artifacts, purpose only]
+[SLIDE 32 — The artifacts, purpose only]
 
 Six things. One line each. Purpose and scope only.
 
@@ -647,7 +710,7 @@ Six things. One line each. Purpose and scope only.
 
 That's the vocabulary. Now the part you came for.
 
-[SLIDE 32 — The consumption matrix]
+[SLIDE 33 — The consumption matrix]
 
 Which surface reads what.
 
@@ -661,7 +724,7 @@ First — the coverage isn't uniform. Some artifacts are read by everything. Som
 
 Second — this matrix moves. Fast. What I'm showing you is verified as of this week. If you're watching a recording of this, go check it yourself. That's not a disclaimer, that's the actual operating advice: **this is a thing you re-verify, not a thing you learn once.**
 
-[DEMO 9 — Same prompt, two surfaces · ~3 min]
+[DEMO 10 — Same prompt, two surfaces · ~3 min]
 
 > **This is the money shot of the block. Rehearse it hardest.**
 >
@@ -677,7 +740,7 @@ Same words. Same repo. Different answers. And the reason isn't randomness or tem
 
 Once you can see that, you can debug it. Before you can see it, it just feels like the tool is inconsistent.
 
-[SLIDE 33 — Three principles]
+[SLIDE 34 — Three principles]
 
 Three things I'd take from this.
 
@@ -699,7 +762,7 @@ Everything you load competes for attention and costs tokens. The skill here is *
 
 I'll say the quiet part. A four-hundred-line instructions file is usually a monument. Somebody hit a problem once, added forty lines to make sure it never happened again, and now every single interaction in that repository pays for it forever. Go read yours. Half of it is archaeology.
 
-[SLIDE 34 — Tie it back]
+[SLIDE 35 — Tie it back]
 
 And here's why I put this section after the failure modes instead of before.
 
@@ -720,9 +783,9 @@ The tool didn't change.
 # BLOCK 7 — Effective Implementation
 **1:13–1:22 · 9 minutes**
 
-[SLIDE 35 — Section header]
+[SLIDE 36 — Section header]
 
-[SLIDE 36 — The rollout you've probably seen]
+[SLIDE 37 — The rollout you've probably seen]
 
 Let me describe a rollout. Tell me if it sounds familiar.
 
@@ -734,7 +797,7 @@ I've watched this happen at a lot of companies and I don't think anybody involve
 
 **Installing the app is table stakes. It is not the project.**
 
-[SLIDE 37 — Four layers]
+[SLIDE 38 — Four layers]
 
 Four layers. Most organizations do the first one and stop.
 
@@ -748,7 +811,7 @@ Four layers. Most organizations do the first one and stop.
 
 Let me take the middle two, because those are where the money is.
 
-[SLIDE 38 — Layer 2, context]
+[SLIDE 39 — Layer 2, context]
 
 Layer two. Repo instructions in your highest-traffic repositories. MCP servers pointed at your critical internal systems. Curated org knowledge.
 
@@ -760,7 +823,7 @@ And I'll put it more strongly than that. **If nobody owns it, it doesn't exist.*
 
 I've seen a dozen orgs where "we should write instructions files" was a good idea that everyone agreed with and no one was accountable for. Six months later there are three instruction files, two of them are wrong, and nobody trusts any of them.
 
-[SLIDE 39 — Layer 3, workflow]
+[SLIDE 40 — Layer 3, workflow]
 
 Layer three is the one that actually moves the needle, and it's the one everybody skips — because it requires changing process rather than buying something.
 
@@ -780,7 +843,7 @@ Prompt files for the work that's genuinely repetitive. Release notes. Migrations
 
 And team norms about what gets delegated asynchronously versus done live — because right now most teams have no shared answer to that, so everyone guesses, and the guessing is where the inconsistency comes from.
 
-[SLIDE 40 — Layer 4, craft]
+[SLIDE 41 — Layer 4, craft]
 
 Layer four. This is the difference between teams getting ten percent and teams getting forty, and it's almost entirely tacit.
 
@@ -792,7 +855,7 @@ Here's the thing about layer four: it does not spread through training decks. I 
 
 So budget for it. Pairing time. Internal demos. A channel where people post what actually worked this week. That's not culture fluff — that's the actual delivery mechanism for the highest-value layer.
 
-[SLIDE 41 — You cannot roll this out uniformly]
+[SLIDE 42 — You cannot roll this out uniformly]
 
 One more organizational point, and it's the reason I structured the middle of this talk around personas.
 
@@ -804,7 +867,7 @@ If you build one rollout plan optimized for the median developer, you will under
 
 Segment by how people work. Which is exactly what that persona exercise was for.
 
-[SLIDE 42 — One concrete recommendation]
+[SLIDE 43 — One concrete recommendation]
 
 If you take one operational thing from this section:
 
@@ -823,11 +886,11 @@ Mandates produce compliance. Demonstrated leverage produces adoption. Those look
 # BLOCK 8 — Measuring What Matters
 **1:22–1:28 · 6 minutes**
 
-[SLIDE 43 — Section header]
+[SLIDE 44 — Section header]
 
 Last section, and I want to start by talking you out of something.
 
-[SLIDE 44 — The two worst metrics]
+[SLIDE 45 — The two worst metrics]
 
 **Acceptance rate. Lines of AI-generated code.**
 
@@ -845,7 +908,7 @@ The moment you put "lines of AI-generated code" on a dashboard that anyone's per
 
 And they will deliver it. Enthusiastically. You will get more lines of code. That is not the same thing as getting more value, and by the time you notice the difference, you've got a codebase full of it.
 
-[SLIDE 45 — The three questions]
+[SLIDE 46 — The three questions]
 
 So here's the filter I'd use instead.
 
@@ -867,7 +930,7 @@ Cost per unit of outcome. Adoption *depth* — not seat count. Where the value i
 
 That's the whole list. If your dashboard has fourteen metrics on it and four of them answer these questions, you have ten metrics that are costing you attention and buying you nothing.
 
-[SLIDE 46 — Reading them honestly]
+[SLIDE 47 — Reading them honestly]
 
 Three notes on reading these without fooling yourself.
 
@@ -877,7 +940,7 @@ Three notes on reading these without fooling yourself.
 
 **On question three:** value is almost never evenly distributed. You'll find two teams getting enormous benefit and six getting very little. That's a **finding**, not a failure — it tells you exactly where to look and what to replicate. Most orgs average it away and learn nothing.
 
-[SLIDE 47 — Two principles]
+[SLIDE 48 — Two principles]
 
 Two principles I'd hold firmly.
 
@@ -893,7 +956,7 @@ Your developer experience survey will tell you *why* the numbers moved months be
 
 The usage API tells you what happened. Your engineers tell you what it means. You need both, and only one of them is on a dashboard.
 
-[SLIDE 48 — Be careful with "productivity"]
+[SLIDE 49 — Be careful with "productivity"]
 
 Last thing in this section, and it's the one I'd most like you to repeat to your leadership.
 
@@ -916,7 +979,7 @@ Which means — and this is the failure mode I'd most like you to avoid — if y
 # BLOCK 9 — Close
 **1:28–1:30 · 2 minutes**
 
-[SLIDE 49 — Three takeaways]
+[SLIDE 50 — Three takeaways]
 
 Three things.
 
@@ -926,7 +989,7 @@ Three things.
 
 **Three. Adoption is a workflow problem, not a license problem.** Seats are layer one of four.
 
-[SLIDE 50 — Closing line]
+[SLIDE 51 — Closing line]
 
 *[Pause before this. Let the room settle.]*
 
@@ -940,7 +1003,7 @@ Everything else is implementation detail.
 
 Thank you.
 
-[SLIDE 51 — Questions]
+[SLIDE 52 — Questions]
 
 I've got some questions up there that are worth asking your own organization this week, whether or not anybody has one for me.
 
@@ -955,16 +1018,17 @@ Check the clock at these three points. If you're behind, cut from the list below
 | Checkpoint | Should be at | If you're behind |
 |---|---|---|
 | End of "when not to" | **0:21** | Cut rapid-fire demo 3 |
-| End of personas | **0:56** | Cut persona 4's second path; compress persona 1's advanced beat |
+| End of personas | **0:56** | Cut demo 5 (the review beat in persona 1); compress persona 4 to beats 2 and 3 |
 | End of context supply chain | **1:13** | Cut implementation layer 4 to one sentence |
 
 **Cut order:**
-1. Rapid-fire demo 3 (code review) — reappears in persona 4
+1. Rapid-fire demo 3 (code review) — persona 1 does this properly later
 2. The autonomy ladder table — talk it instead of showing it
-3. Persona 1's advanced beat — do the piping demo only if time allows
-4. Implementation layer 4 — compress to one sentence
+3. Demo 5, the review beat in persona 1 — only if rapid-fire demo 3 survived
+4. Persona 4's beat 1 (schema explanation) — go straight to the money mismatch
+5. Implementation layer 4 — compress to one sentence
 
-**Never cut:** the "when not to" block, demo 9 (same prompt / two surfaces), the cold-open payoff. Those are why an advanced audience stays.
+**Never cut:** the "when not to" block, demo 10 (same prompt / two surfaces), the cold-open payoff, or slide 26 ("the persona that breaks the pattern"). Those four are why an advanced audience stays.
 
 ---
 

@@ -183,18 +183,21 @@ For each persona use the same three-beat structure — it builds a rhythm the au
 ---
 
 ### Persona 1 — Senior / staff engineer
-*Surface: CLI*
+*Surfaces: CLI + code review*
 
 **The job:** Changes that span more repos than you can hold in your head, in an environment where you already know exactly what you want.
 
-**Demo:** A cross-cutting change across multiple repos from the terminal. Something like a dependency upgrade with API breakage, or applying a lint rule and fixing the fallout. Show it running, show it using the test suite as its own feedback signal.
+**Demo A:** A cross-cutting change across multiple repos from the terminal — a dependency upgrade with API breakage, or applying a lint rule and fixing the fallout. Show it running, show it using the test suite as its own feedback signal.
 
-**The advanced beat — show one of these, not all:**
-- Piping: `git log | copilot -p "..."`, or feeding it command output. Composability is the CLI's real superpower and it's what earns the terminal-dwellers in the room.
-- A custom agent definition scoped to this task
-- Running it headless in a script
+**Optional beat:** Piping. `git diff | copilot -p "..."`. Composability is the CLI's real superpower and it's what earns the terminal-dwellers in the room.
+
+**Demo B:** Push the change, open a PR, show the agent review on it. **The continuity is the point** — this is the change you just made, not a separate example. Show what it caught and, honestly, what it missed.
+
+Frame review as *triage, not judgment*: a first pass so humans spend attention on design instead of nitpicks. The unglamorous argument is that review latency is usually the largest single chunk of dead time in a delivery pipeline and nobody optimizes it because it's nobody's job.
 
 **Why this surface:** You have the context, you don't need a UI, and the work escapes a single workspace. The CLI is the only surface where Copilot composes with the rest of your tooling.
+
+**The routing beat worth saying out loud:** the same person doing the same piece of work moved cells on the matrix the moment it went from "I'm doing this" to "someone should check this."
 
 ---
 
@@ -228,16 +231,31 @@ This is the persona most likely to be underserved in the room, and the one where
 
 ---
 
-### Persona 4 — Maintainer / reviewer / on-call
-*Surfaces: Code review + coding agent + CLI*
+### Persona 4 — DBA / analytics engineer / data scientist
+*Surfaces: github.com + CLI + SQL*
 
-**The job:** Reviewing more than you can read. Or: it's 2am and something's broken.
+**Put this one last deliberately. It complicates everything the first three established, and that's its job.**
 
-**Demo (pick one based on your repo and your energy):**
-- **Review path:** PR with agent review comments. Show what it caught and — honestly — what it missed. Talk about it as *triage*, a first pass that lets humans spend attention on design instead of nitpicks.
-- **On-call path:** CLI + MCP against logs/metrics. Investigate a failure. Reinforce the earlier point: this is good at *narrowing* and bad at *concluding*.
+**The job:** A schema you didn't design, data you didn't generate, queries somebody wrote in a hurry three years ago before leaving.
 
-**Why this surface:** Review and incident work is asynchronous and interrupt-driven by nature. It's a natural fit for the async surfaces, and it's the fastest ROI most teams can find.
+**Demo — three beats:**
+1. **Read the schema on github.com.** No clone, no database connection. "Explain this data model and what could go wrong at query time."
+2. **The money mismatch.** Ask it to compare the schema against the application's models. The warehouse stores money as a float; the app uses integer cents. **Neither codebase knows.** This bug is invisible from inside either one — it's only visible from a vantage point that reads both at once.
+3. **`EXPLAIN QUERY PLAN`.** The output says `SEARCH o USING AUTOMATIC COVERING INDEX` — SQLite announcing it had to build a throwaway index at runtime because the schema didn't provide one. Add the index; the N+1 shape goes from ~0.96s to ~0.009s.
+
+> "The database has been filing a bug report against itself for three years and nobody read it."
+
+**Then the turn — this is the most intellectually honest moment in the talk:**
+
+> "Every other persona today had a test suite. This one doesn't. A wrong query doesn't throw an exception. It returns a confident, plausible, correctly-formatted, completely wrong number — and that number goes into a dashboard somebody makes a decision from. Software fails loudly. Analysis fails quietly, and then gets presented to leadership."
+
+Apply the earlier thesis honestly and it gives an uncomfortable answer: **where verification is expensive or absent, you get *less* autonomy, not more** — no matter how good the model gets.
+
+Be explicit that this isn't a walk-back. It's the thesis applied to a discipline where the answer comes out different. Land the practical upshot:
+
+> "The highest-value thing a data team can build right now isn't a prompt library. It's reconciliation checks. Those are what make everything else safe to hand off."
+
+**Why this persona:** it's the one that proves the framework is a framework and not a sales pitch. If anyone in the room does data work, this is the moment they decide you're worth listening to — because everyone else sells them the opposite.
 
 ---
 

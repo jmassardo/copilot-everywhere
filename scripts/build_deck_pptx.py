@@ -456,10 +456,10 @@ DEMONSTRATED, not asserted.""",
             "title": "Who we're following",
             "table": [
                 ["Persona", "Core job", "Surface"],
-                ["Senior / staff engineer", "Changes bigger than one repo", "CLI"],
+                ["Senior / staff engineer", "Changes bigger than one repo", "CLI + code review"],
                 ["Platform / DevEx lead", "Making 200 other people faster", "MCP + org config"],
                 ["Product manager / BA (dev-adjacent)", "Fuzzy idea to backlog engineers don't hate", "Copilot app + dotcom"],
-                ["Maintainer / on-call", "Reviewing more than you can read", "Code review + agent"],
+                ["DBA / analytics engineer", "A schema you didn't design", "dotcom + CLI + SQL"],
             ],
             "table_font": 12,
             "notes": """The three beats build a rhythm. Keep them strict.
@@ -470,19 +470,28 @@ Beat 3 = point at the matrix cell + why (1 min)""",
         {
             "layout": L_TITLE_CONTENT,
             "title": "Persona 1: senior / staff engineer",
-            "eyebrow": "Surface: CLI",
+            "eyebrow": "Surface: CLI + code review",
             "body": [
                 "**The job:** changes spanning more repos than you can hold in your head, where you already know exactly what you want.",
-                "**Demo:** cross-repo change from the terminal, tests as the feedback signal",
-                "**Advanced beat:** piping. git log | copilot -p \"...\"",
+                "**Demo A:** cross-repo change from the terminal, tests as the feedback signal",
+                "**Demo B:** push it, then agent review on the resulting PR - what it caught, and what it missed",
                 "> The CLI is the only surface where Copilot composes with the rest of your tooling.",
             ],
-            "notes": """DEMO: cross-repo dep upgrade w/ real API breakage. Terminal 18pt+.
-CRITICAL BEAT - narrate it using the test suite as its OWN feedback signal:
+            "notes": """TWO DEMOS - one workflow, not two topics. Make the change, then review it.
+
+DEMO A: cross-repo dep upgrade w/ real API breakage. Terminal 18pt+.
+CRITICAL BEAT - narrate the test suite as its OWN feedback signal:
   "it just failed, and it's reading its own failure."
-Advanced beat: PICK ONE. Piping earns the terminal people.
-*** CUT CANDIDATE #3 *** - drop the advanced beat if behind.
-Matrix: TOP LEFT. Everything else is a destination; this one's a COMPONENT.""",
+Optional: piping. git diff | copilot -p "..." earns the terminal people.
+
+DEMO B: MUST point at something the review MISSED, out loud.
+Framing: TRIAGE, not judgment.
+Review latency is the biggest chunk of dead time in most pipelines and
+nobody optimizes it because it's nobody's job.
+
+*** CUT CANDIDATE #3 *** - drop DEMO B if behind; rapid-fire already showed review.
+Matrix: TOP LEFT for the change, MIDDLE-RIGHT for the review. Say both -
+same person, same work, DIFFERENT CELL once it becomes 'someone should check this.'""",
         },
         {
             "layout": L_TITLE_CONTENT,
@@ -524,21 +533,48 @@ Real point: idea -> code-to-react-to collapsed from a sprint to a coffee break."
         },
         {
             "layout": L_TITLE_CONTENT,
-            "title": "Persona 4: maintainer / reviewer / on-call",
-            "eyebrow": "Surface: code review + agent",
+            "title": "Persona 4: DBA / analytics engineer",
+            "eyebrow": "Surface: dotcom + CLI + SQL",
             "body": [
-                "**The job:** reviewing more than you can read. Or it's 2am and something is broken.",
-                "**Demo:** agent review comments on a real PR - what it caught, and what it missed",
-                "**Frame it as triage,** not judgment. Humans spend attention on design, not nitpicks.",
-                "> Review and incident work is asynchronous and interrupt-driven by nature.",
+                "**The job:** a schema you didn't design, data you didn't generate, queries somebody wrote in a hurry before they left.",
+                "**Demo:** read an inherited schema on dotcom, find where the warehouse and the app disagree about money, then EXPLAIN QUERY PLAN",
+                "> The warehouse stores money as a float. The app uses integer cents. Neither codebase knows.",
             ],
-            "notes": """PICK ONE PATH IN REHEARSAL. Do not do both.
-Review path = safer. On-call path = higher risk/reward.
-MUST DO: point at something it MISSED, out loud.
-  Most credibility you'll earn all session.
-The unglamorous argument: review latency is usually the biggest chunk of dead time
-in your pipeline, and nobody optimizes it because it's nobody's job.
-SHOULD BE AT 0:56 LEAVING THIS BLOCK.""",
+            "notes": """THIS PERSONA COMPLICATES THE THESIS ON PURPOSE. Don't rush to the twist.
+
+Beat 1: dotcom chat, "explain this schema" - no clone, no DB connection.
+Beat 2: THE MONEY MISMATCH. Warehouse REAL vs app integer cents.
+  Invisible from inside EITHER codebase. Only visible from a vantage point
+  that reads both at once.
+Beat 3: EXPLAIN QUERY PLAN -> "SEARCH o USING AUTOMATIC COVERING INDEX"
+  SQLite announcing it built a throwaway index because the schema didn't
+  provide one. "The database has been filing a bug report against itself
+  for three years and nobody read it."
+  Add the index: N+1 shape 0.96s -> 0.009s. ~100x.
+
+*** CUT CANDIDATE #4 *** - drop beat 1 if behind, go straight to the mismatch.""",
+        },
+        {
+            "layout": L_STATEMENT,
+            "title": "A wrong query doesn't throw. It returns a plausible number.",
+            "notes": """NEVER CUT. The most intellectually honest slide in the talk. Slow.
+
+Setup: "Every other persona today had a test suite. This one doesn't."
+Software fails LOUDLY. Analysis fails QUIETLY, then gets presented to leadership.
+
+Apply the earlier thesis honestly:
+  Where verification is expensive or absent - which is most of data work -
+  you get LESS autonomy. Not more. No matter how good the model gets.
+
+This is NOT a walk-back. It's the thesis applied to a discipline where the
+answer comes out different. If someone in the room does data work, this is
+the moment they decide you're worth listening to - because everyone else
+sells them the opposite.
+
+Practical upshot, say it out loud:
+'The highest-value thing a data team can build right now isn't a prompt
+library. It's reconciliation checks. Those are what make everything else
+safe to hand off.'""",
         },
         {
             "layout": L_STATEMENT,

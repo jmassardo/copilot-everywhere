@@ -492,10 +492,10 @@ DEMONSTRATED, not asserted.
 
 | Persona | Core job | Surface |
 |---|---|---|
-| **Senior / staff engineer** | Changes bigger than one repo | CLI |
+| **Senior / staff engineer** | Changes bigger than one repo | CLI + code review |
 | **Platform / DevEx lead** | Making 200 other people faster | MCP + org config |
 | **Product manager / BA** <span class="small">dev-adjacent</span> | Fuzzy idea → backlog engineers don't hate | Copilot app + dotcom |
-| **Maintainer / on-call** | Reviewing more than you can read | Code review + agent |
+| **DBA / analytics engineer** | A schema you didn't design, data you didn't generate | dotcom + CLI + SQL |
 
 <p class="small">Same three beats each: the real job → live demo → which cell on the matrix, and why.</p>
 
@@ -513,22 +513,32 @@ Beat 3 = point at the matrix cell + why (1 min)
 ### The job
 Changes spanning more repos than you can hold in your head, where you already know exactly what you want.
 
-<span class="demo">LIVE DEMO</span> &nbsp; Cross-repo change from the terminal — dependency upgrade with API breakage, tests as the feedback signal
+<span class="demo">LIVE DEMO</span> &nbsp; Cross-repo change from the terminal — tests as the feedback signal
 
-**The advanced beat:** piping. `git log | copilot -p "..."`
+<span class="demo">LIVE DEMO</span> &nbsp; Then ship it: **agent review on the resulting PR** — what it caught, and honestly, what it missed
 
-> Composability is the CLI's real superpower.
+> Composability is the CLI's real superpower. Review is triage, not judgment.
 
-**Why this surface:** You have the context. You don't need a UI. The work escapes a single workspace. **The CLI is the only surface where Copilot composes with the rest of your tooling.**
+**Why this surface:** You have the context. The work escapes a single workspace. **The CLI is the only surface where Copilot composes with the rest of your tooling.**
 
 <!--
-DEMO: cross-repo dep upgrade w/ real API breakage. Terminal 18pt+.
-CRITICAL BEAT — narrate it using the test suite as its OWN feedback signal:
+TWO DEMOS HERE — they're one workflow, not two topics. Make the change, then review it.
+
+DEMO A: cross-repo dep upgrade w/ real API breakage. Terminal 18pt+.
+CRITICAL BEAT — narrate the test suite as its OWN feedback signal:
   "it just failed, and it's reading its own failure."
-Advanced beat: PICK ONE. Piping is the one that earns the terminal people.
-*** CUT CANDIDATE #3 *** — drop the advanced beat if behind.
-Matrix: TOP LEFT. You hold context, synchronous.
-Kicker: everything else is a destination; this one's a COMPONENT.
+Optional: piping. `git diff | copilot -p "..."` earns the terminal people.
+
+DEMO B: push it, open a PR, agent review runs.
+MUST DO: point at something it MISSED, out loud.
+  Most credibility you'll earn all session.
+Framing: TRIAGE, not judgment — first pass so humans spend attention on design,
+not nitpicks. Review latency is the biggest chunk of dead time in most pipelines
+and nobody optimizes it because it's nobody's job.
+
+*** CUT CANDIDATE #3 *** — drop DEMO B if behind; rapid-fire already showed review.
+Matrix: TOP LEFT for the change, MIDDLE-RIGHT for the review. Say both.
+Kicker: everything else is a destination; the CLI is a COMPONENT.
 -->
 
 ---
@@ -590,27 +600,61 @@ Matrix: MIDDLE ROW, spans both columns.
 
 ---
 
-## Persona 4 — Maintainer / Reviewer / On-Call
+## Persona 4 — DBA / Analytics Engineer
 
 ### The job
-Reviewing more than you can read. Or: it's 2am and something is broken.
+A schema you didn't design. Data you didn't generate. Queries somebody wrote in a hurry before they left.
 
-<span class="demo">LIVE DEMO</span> &nbsp; Agent review comments on a real PR — what it caught, and honestly, what it missed
+<span class="demo">LIVE DEMO</span> &nbsp; Read an inherited schema on dotcom · find where the warehouse and the app disagree about money · `EXPLAIN QUERY PLAN`
 
-**Frame it as triage,** not judgment. A first pass so humans spend attention on design instead of nitpicks.
+**But here's the twist:**
 
-**Why this surface:** Review and incident work is asynchronous and interrupt-driven *by nature*. Fastest ROI most teams can find.
+<p class="big">A wrong query doesn't throw.<br/>It returns a plausible number.</p>
 
 <!--
-PICK ONE PATH IN REHEARSAL. Do not do both.
-Review path = safer. On-call path = higher risk/reward.
-MUST DO: point at something it MISSED, out loud.
-  Most credibility you'll earn all session.
-Framing: TRIAGE, not judgment.
-The unglamorous argument: review latency is usually the biggest chunk of dead time
-in your pipeline, and nobody optimizes it because it's nobody's job.
-Matrix: MIDDLE ROW, RIGHT COLUMN.
+THIS PERSONA COMPLICATES THE THESIS ON PURPOSE. Don't rush to the twist.
+
+DEMO beats:
+1. dotcom chat: "explain this schema" — no clone, no DB connection
+2. The money mismatch: warehouse stores REAL, app uses integer cents.
+   NEITHER CODEBASE KNOWS. Invisible from inside either one.
+3. EXPLAIN QUERY PLAN -> "SEARCH o USING AUTOMATIC COVERING INDEX"
+   SQLite literally announcing it built a throwaway index because the schema
+   didn't provide one. Best single artifact in the talk. Point at it.
+   Add the index: N+1 shape goes 0.96s -> 0.009s. ~100x.
+
+Then the twist slide. Setup line:
+"Every other persona today had a test suite. This one doesn't."
+Matrix: spans rows — dotcom for schema, CLI for query work.
 SHOULD BE AT 0:56 LEAVING THIS BLOCK.
+-->
+
+---
+
+## The Persona That Breaks the Pattern
+
+Every other persona today had a test suite. **This one doesn't.**
+
+- Software fails **loudly** — exceptions, red CI, failing tests
+- Analysis fails **quietly**, then gets presented to leadership
+
+> Remember: cheap verification is what buys autonomy.
+
+<p class="big">Where verification is expensive, you get <em>less</em> autonomy — no matter how good the model is.</p>
+
+<!--
+The most intellectually honest slide in the talk. Deliver it slowly.
+
+This is NOT a walk-back of the earlier thesis — it's the thesis applied
+honestly to a discipline where the answer comes out different.
+
+If someone in the room does data work, this is the moment they decide
+you're worth listening to, because everyone else sells them the opposite.
+
+The practical upshot to say out loud:
+"So the highest-value thing a data team can build right now isn't a prompt
+library. It's reconciliation checks. Those are what make everything else
+safe to hand off."
 -->
 
 ---
@@ -630,9 +674,9 @@ But notice something else:
 <!--
 THE PIVOT INTO THE SECOND HALF. Beat before the last line.
 Walk it back through all four:
-  refactor needed our conventions · MCP was ENTIRELY external context
+  refactor + review needed our conventions · MCP was ENTIRELY external context
   PM demo only worked because it could read real services
-  review only caught what it caught because it knew what our code should look like
+  the schema demo found a money mismatch only visible from OUTSIDE both codebases
 None of that arrived in the box.
 -->
 
