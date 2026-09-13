@@ -11,9 +11,9 @@ You'll do one [persona track](README.md#pick-your-track), not all four. What you
 | Track | Needs |
 |---|---|
 | **Product** | A browser and a GitHub account. That's genuinely it. |
-| **Maintainer** | Browser + Copilot CLI (exercise 3 only) |
-| **Engineer** | Copilot CLI + an IDE with agent mode + Python |
 | **Platform** | IDE with agent mode + Python, MCP optional |
+| **Engineer** | Copilot CLI + an IDE with agent mode + Python |
+| **Data** | Python + a SQLite client, plus CLI or IDE agent |
 
 ---
 
@@ -27,7 +27,7 @@ Active Copilot subscription on your GitHub account. Confirm at [github.com/setti
 
 ### 2. Copilot CLI
 
-**Engineer and Maintainer tracks.** Install and authenticate:
+**Engineer and Data tracks.** Install and authenticate:
 
 ```bash
 copilot --version
@@ -37,11 +37,11 @@ If that fails, follow the [CLI install docs](https://docs.github.com/copilot) an
 
 ### 3. IDE with Copilot
 
-**Engineer and Platform tracks.** VS Code, a JetBrains IDE, or equivalent — with agent mode available, not just completions. The Platform track needs to show you which context files got loaded.
+**Engineer, Platform, and Data tracks.** VS Code, a JetBrains IDE, or equivalent — with agent mode available, not just completions. The Platform track needs to show you which context files got loaded.
 
 ### 4. Python 3.11+
 
-**Engineer, Platform, and Maintainer tracks** (sample app only).
+**Engineer, Platform, and Data tracks** (sample app only).
 
 ```bash
 python3 --version
@@ -83,9 +83,34 @@ uvicorn app.main:app --reload
 
 ### Fork it
 
-The Product and Maintainer tracks need somewhere to open pull requests. Fork the repo to your own account and work from your fork.
+The Product track needs somewhere to open pull requests. Fork the repo to your own account and work from your fork.
 
 > **Product track:** you only need the fork. You never have to clone or install anything — exercises 1 through 5 all happen in a browser.
+
+### Data track only: build the database
+
+```bash
+cd sample-app
+python data/build_db.py
+```
+
+Expected output:
+
+```
+customers      2,060
+orders        50,000
+line_items   125,362
+refunds        2,806
+```
+
+Deterministic, so your numbers will match everyone else's exactly. Verify you can open it:
+
+```bash
+sqlite3 data/orders.db "SELECT COUNT(*) FROM orders;"
+# 50000
+```
+
+Any SQLite client works — `sqlite3`, DBeaver, DataGrip, or a Python notebook.
 
 ---
 
@@ -105,7 +130,9 @@ Then find your raw material. What you need depends on your track:
 | **Engineer** | A lint rule you could enable or a deprecated API in 3+ files; a module with logic and no tests |
 | **Platform** | A convention your team enforces socially but never wrote down |
 | **Product** | Your real unsorted feedback, and the vaguest request in your backlog |
-| **Maintainer** | An open PR, your issue backlog, and a recent incident you can reconstruct |
+| **Data** | A schema you inherited, your slowest dashboard query, a migration you've been avoiding |
+
+> **Data track guardrail:** work against a replica or a local dump, never production. Don't paste customer PII into a prompt, and don't let an agent run DDL against a live database. If your org has a data classification policy, this is where it applies.
 
 > If you can't find raw material for an exercise, switch to Track A for that one. Mixing is fine.
 
@@ -116,11 +143,12 @@ Then find your raw material. What you need depends on your track:
 Run this before the clock starts:
 
 - [ ] You've picked a track
-- [ ] `copilot --version` works *(Engineer, Maintainer)*
-- [ ] IDE opens the repo and Copilot agent mode responds *(Engineer, Platform)*
+- [ ] `copilot --version` works *(Engineer, Data)*
+- [ ] IDE opens the repo and Copilot agent mode responds *(Engineer, Platform, Data)*
 - [ ] github.com loads and you can see your fork *(all tracks)*
 - [ ] `pytest -q` shows 13 passed *(sample app)*
 - [ ] `ruff check .` is clean *(sample app)*
+- [ ] `sqlite3 data/orders.db "SELECT COUNT(*) FROM orders;"` returns 50000 *(Data)*
 - [ ] Your own test suite passes on a clean checkout *(own repo)*
 - [ ] You're on a branch, not `main`
 
@@ -143,15 +171,19 @@ sample-app/
   tests/
     test_orders.py       7 tests
     test_customers.py    6 tests
+  data/
+    schema.sql           Analytics replica schema
+    build_db.py          Generates 50k orders, deterministically
   FEEDBACK.md            12 unsorted support tickets and Slack messages
 ```
 
-Five things are true about this codebase, and each one matters to at least one track:
+Six things are true about this codebase, and each one matters to at least one track:
 
-1. **The two routers handle errors incompatibly.** Both styles are present, so an agent pattern-matching this repo can't know which one you want. *(Platform, Maintainer)*
+1. **The two routers handle errors incompatibly.** Both styles are present, so an agent pattern-matching this repo can't know which one you want. *(Platform)*
 2. **`pricing.py` has no tests.** It also has a real boundary bug. *(Engineer, Product)*
 3. **`datetime.utcnow()` is deprecated and used in three files.** *(Engineer)*
-4. **`FEEDBACK.md` is twelve unsorted complaints**, several sharing one root cause. *(Product, Maintainer)*
-5. **There is no Copilot configuration whatsoever.** *(Platform fixes this)*
+4. **`FEEDBACK.md` is twelve unsorted complaints**, several sharing one root cause. *(Product)*
+5. **The analytics database disagrees with the application** about how money is represented, and has 394 orphaned orders, 60 duplicate customers, and no indexes. *(Data)*
+6. **There is no Copilot configuration whatsoever.** *(Platform fixes this)*
 
 None of that is accidental.

@@ -6,3 +6,6 @@ __pycache__/
 venv/
 .DS_Store
 ~$*
+
+# Generated locally by data/build_db.py
+*.db

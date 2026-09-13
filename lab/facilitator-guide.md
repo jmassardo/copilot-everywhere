@@ -27,7 +27,7 @@ Most rooms skew heavily to Engineer. Budget accordingly:
 | Track | Typical share | Watch for |
 |---|---|---|
 | Engineer | 40–60% | May need two tables |
-| Maintainer | 15–25% | Overlaps with Engineer; let people move |
+| Data | 10–25% | Needs the database built — verify in setup |
 | Platform | 10–20% | Small but high-influence |
 | Product | 5–20% | **Often under-attended and over-valuable** |
 
@@ -35,13 +35,17 @@ Most rooms skew heavily to Engineer. Budget accordingly:
 
 > **If Platform is empty:** you run it. Do exercise 1 live from the front during setup and share the instructions file. Otherwise debrief question 3 has no answer.
 
+> **If Data is empty:** that's survivable, but you lose debrief question 4 — which is the only place the room confronts a discipline where verification is genuinely hard. Consider seeding it with anyone who touches reporting, ETL, or a warehouse.
+
 ---
 
 ## Pre-lab, one week out
 
 Send [setup.md](setup.md) with the track table and ask people to **pick a track in advance.** They arrive with the right tools installed, and you get a headcount for seating.
 
-Ask for a reply confirming `copilot --version` works — Engineer and Maintainer have no fallback without it. The replies you *don't* get tell you where your morning is going.
+Ask for a reply confirming `copilot --version` works — Engineer and Data have no fallback without it. The replies you *don't* get tell you where your morning is going.
+
+**Data track attendees:** ask them to run `python data/build_db.py` in advance and confirm the row counts. It takes about a second, but it's the step that silently blocks the whole track.
 
 ---
 
@@ -116,22 +120,28 @@ That second line reliably gets a laugh from people who've been burned by vendor 
 
 **Terminology:** use *dev-adjacent*, never "non-technical." If an attendee says it, one gentle sentence is worth it — the distinction is operationally useful, not just polite.
 
-### Maintainer
-**Expect discomfort writing the deliberately bad PR.** Some engineers resist committing bad code. Frame it as building a test fixture.
+### Data
+**The track that makes the lab's thesis land hardest**, because it's the one where verification is genuinely expensive.
 
-**The prediction step matters.** If people see the review output before writing their own expectations, hindsight bias eats the exercise. Make them write first.
+**Open it with the framing, don't let them skip it.** Every other track has `pytest`. This one has a query that returns a plausible wrong number and no exception. If they internalize only that, the track worked.
 
-**Exercise 4 is the real deliverable** — it's what they take back to their team. Give it the full twelve minutes even if you're behind elsewhere.
+**Exercise 2 is the core.** Counting the problems is easy; the valuable part is the `discount_rate IS NULL` ambiguity — 7,113 rows where NULL means two different things and **no query can tell you which.** Attendees will try to solve it technically. Let them try for a minute, then name it: this is a conversation, not a query.
+
+**Exercise 3 has the best single artifact in the lab.** `EXPLAIN QUERY PLAN` returns `SEARCH o USING AUTOMATIC COVERING INDEX` — SQLite literally announcing it had to build an index at runtime because the schema didn't provide one. Point at it. The N+1 shape goes from ~0.96s to ~0.009s.
+
+**Watch for:** accepting the first index suggestion list wholesale. Every index is a write-path tax. Make them justify each one.
+
+**The trap to let them fall into:** join fan-out through `line_items` inflating every sum. It produces a *completely plausible* number. If someone reports revenue without cross-checking, that's your debrief material — with their permission.
 
 ---
 
 ## Cross-track connection
 
-If Platform and any other track are both running, engineer this moment:
+Two moments worth engineering deliberately.
 
-Have a Platform attendee share their `.github/copilot-instructions.md` with an Engineer or Maintainer attendee mid-lab. The Maintainer track's exercise 1 explicitly checks whether the error-convention mismatch got flagged — **with instructions it usually does, without it usually doesn't.**
+**Platform → anyone.** Have a Platform attendee share their `.github/copilot-instructions.md` with an Engineer or Data attendee mid-lab, and have the recipient re-run an exercise with it in place. That's the most convincing demonstration in the lab, and it happens between two attendees rather than from the front.
 
-That's the most convincing demonstration in the entire lab, and it happens between two attendees rather than from the front.
+**Data ↔ Engineer.** The analytics database stores money as `REAL`; the application uses integer cents. **Neither side knows.** If you have both tracks running, get one person from each to compare notes out loud during the debrief — it's a live example of a bug that's invisible from inside either codebase, and it's exactly the class of problem that needs org-level context rather than repo-level context.
 
 ---
 
@@ -139,9 +149,10 @@ That's the most convincing demonstration in the entire lab, and it happens betwe
 
 1. **Copilot CLI not installed or authenticated** — by far the most common. Only fixable before the lab. Fallback: move them to Product, which needs none of it.
 2. **Python version issues** — `pydantic` source-builds on 3.14. This repo's floor-pinned requirements handle it; people on a stale fork hit a Rust compile error.
-3. **Coding agent not enabled** for the org — hits Product exercise 4 and Engineer stretch work.
-4. **Corporate proxy blocking MCP** — Platform exercise 5, which is why it's last and optional.
-5. **Own-repo attendees picking something too large** — agent stalls, they conclude the tool is bad. Redirect to a subdirectory.
+3. **Data track: database not built** — one command, but it blocks everything. Check it during setup.
+4. **Coding agent not enabled** for the org — hits Product exercise 4 and Engineer stretch work.
+5. **Corporate proxy blocking MCP** — Platform exercise 5, which is why it's last and optional.
+6. **Own-repo attendees picking something too large** — agent stalls, they conclude the tool is bad. Redirect to a subdirectory.
 
 ---
 
@@ -150,8 +161,8 @@ That's the most convincing demonstration in the entire lab, and it happens betwe
 **"Which model should we be using?"**
 Redirect to context. The gap between teams is almost never the model. The Platform track is the evidence.
 
-**"How do we stop people rubber-stamping agent PRs?"**
-Verification infrastructure, not policy. If tests and CI catch bad changes, rubber-stamping is survivable. If they don't, that problem predates Copilot.
+**"How do we stop people rubber-stamping agent output?"**
+Verification infrastructure, not policy. If tests and CI catch bad changes, rubber-stamping is survivable. If they don't, that problem predates Copilot. The Data track is the sharpest version of this — there's nothing to rubber-stamp *against*.
 
 **"Is this going to replace developers?"**
 It changes what's scarce. When producing code gets cheaper, deciding what to build and verifying whether it's right become the bottleneck. Most orgs aren't staffed for that shift.

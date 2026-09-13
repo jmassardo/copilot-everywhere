@@ -57,13 +57,13 @@ The PPTX build maps content onto real template layouts and placeholders, so the 
 | [Engineer](lab/tracks/engineer.md) | Senior / staff engineer | Copilot CLI |
 | [Platform](lab/tracks/platform.md) | Platform / DevEx lead | Configuration + MCP |
 | [Product](lab/tracks/product.md) | PM, BA, support lead, TPM | github.com + coding agent |
-| [Maintainer](lab/tracks/maintainer.md) | Reviewer, maintainer, on-call | Code review + CLI |
+| [Data](lab/tracks/data.md) | DBA, analytics engineer, data scientist | github.com + CLI + SQL |
 
 Every exercise works against the included [sample app](sample-app/) **or** the student's own repository. First three exercises in each track are core; four and five are for fast movers.
 
 **Every exercise is work that persona actually does.** No PM writes a unit test to prove a point — that teaches the wrong lesson twice, and it undercuts the talk's whole argument about meeting people where they work.
 
-The tracks also interlock: the Platform track writes the context configuration that the Engineer and Maintainer tracks then consume, which makes "context is the product" something attendees demonstrate to each other rather than something you assert.
+The tracks also interlock. The Platform track writes the context configuration that Engineer and Data then consume, which makes "context is the product" something attendees demonstrate to each other rather than something you assert. And the Data track deliberately has the *weakest* verification story of the four — no test suite, silent failures — which turns "cheap verification buys autonomy" from a slogan into something the room can feel.
 
 Facilitators: [facilitator-guide.md](lab/facilitator-guide.md).
 
