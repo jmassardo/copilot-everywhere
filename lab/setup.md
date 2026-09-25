@@ -1,189 +1,111 @@
-# Setup & Baseline
+# Setup and Baseline
 
-**Timebox in class: 10 minutes.** That is only enough time to *verify* a working setup, not build one. Do the install section before you arrive.
+Complete installation before the lab. The first 10 minutes are for verification,
+not package troubleshooting.
 
----
+## Requirements by track
 
-## First: pick your track
-
-You'll do one [persona track](README.md#pick-your-track), not all four. What you need to install depends on which:
-
-| Track | Needs |
+| Track | Required |
 |---|---|
-| **Product** | A browser and a GitHub account. That's genuinely it. |
-| **Platform** | IDE with agent mode + Python, MCP optional |
-| **Engineer** | Copilot CLI + an IDE with agent mode + Python |
-| **Data** | Python + a SQLite client, plus CLI or IDE agent |
+| Engineer | VS Code with Copilot chat, agent mode, multiple sessions; GitHub access |
+| Platform | VS Code with agent mode and custom-agent support; GitHub access |
+| Product | Browser, GitHub account, Copilot on GitHub or Copilot app |
+| Data | VS Code with agent mode, Python, SQLite client |
 
----
+Cloud coding agent access is strongly recommended for Engineer and Product.
+Facilitators provide completed fallback pull requests when it is unavailable or
+does not finish within the lab.
 
-## Before the lab
-
-### 1. Copilot access
-
-Active Copilot subscription on your GitHub account. Confirm at [github.com/settings/copilot](https://github.com/settings/copilot).
-
-**All tracks need this.**
-
-### 2. Copilot CLI
-
-**Engineer and Data tracks.** Install and authenticate:
-
-```bash
-copilot --version
-```
-
-If that fails, follow the [CLI install docs](https://docs.github.com/copilot) and come back. The Engineer track has no fallback without it.
-
-### 3. IDE with Copilot
-
-**Engineer, Platform, and Data tracks.** VS Code, a JetBrains IDE, or equivalent — with agent mode available, not just completions. The Platform track needs to show you which context files got loaded.
-
-### 4. Python 3.11+
-
-**Engineer, Platform, and Data tracks** (sample app only).
-
-```bash
-python3 --version
-```
-
-> **Known issue:** on Python 3.14, exact-pinned `pydantic` builds from source and fails. This repo floor-pins its dependencies to avoid that. If you hit a Rust/`maturin`/`pyo3` compile error during install, you are almost certainly on an exact-pinned fork — use the `requirements.txt` in this repo as-is.
-
----
-
-## Track A — sample app setup
+## Repository setup
 
 ```bash
 git clone https://github.com/jmassardo/copilot-everywhere.git
 cd copilot-everywhere/sample-app
 
 python3 -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
-### Verify your baseline
+Windows PowerShell equivalents:
 
-Everything must be green before you start. If it isn't, fix that first — every exercise uses the test suite as its verification signal, and a red baseline makes every result meaningless.
+```powershell
+py -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+Fork the repository if your track needs to create issues, push branches, or
+delegate to a cloud coding agent.
+
+## Verify the baseline
+
+From `sample-app/`:
 
 ```bash
-pytest -q
-# expected: 13 passed
-
-ruff check .
-# expected: All checks passed!
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check .
 ```
 
-Optionally, run the service:
+Expected:
+
+```text
+13 passed
+All checks passed!
+```
+
+This baseline is intentionally green **and still contains a customer-isolation
+defect**. One lab objective is learning why a passing suite can verify the wrong
+thing. Do not “repair” `store.list_orders` during setup.
+
+## Data track
 
 ```bash
-uvicorn app.main:app --reload
-# http://127.0.0.1:8000/docs
-```
-
-### Fork it
-
-The Product track needs somewhere to open pull requests. Fork the repo to your own account and work from your fork.
-
-> **Product track:** you only need the fork. You never have to clone or install anything — exercises 1 through 5 all happen in a browser.
-
-### Data track only: build the database
-
-```bash
-cd sample-app
-python data/build_db.py
-```
-
-Expected output:
-
-```
-customers      2,060
-orders        50,000
-line_items   125,362
-refunds        2,806
-```
-
-Deterministic, so your numbers will match everyone else's exactly. Verify you can open it:
-
-```bash
+.venv/bin/python data/build_db.py
 sqlite3 data/orders.db "SELECT COUNT(*) FROM orders;"
-# 50000
 ```
 
-Any SQLite client works — `sqlite3`, DBeaver, DataGrip, or a Python notebook.
+Expected order count: `50000`.
 
----
+The database is deterministic and disposable. Rebuild it at any time with the
+same command.
 
-## Track B — your own repo setup
+## Copilot verification
 
-Pick a repository where **all** of these are true:
+Before class:
 
-- [ ] You understand the code well enough to spot a wrong answer
-- [ ] There's a test suite you can run locally, and it currently passes
-- [ ] You can push branches and open PRs
-- [ ] Nothing in it is so sensitive that you'd hesitate to let an agent read it
+- Open the repository in VS Code.
+- Start two separate chat sessions and confirm both remain available.
+- Confirm you can select Ask/Plan and Agent modes.
+- If available, confirm the cloud coding agent can be assigned an issue in your
+  fork.
+- Platform attendees: confirm custom agents and repository instructions are
+  supported by your editor version.
+- Product attendees: confirm Copilot can answer a repository-grounded question
+  in the browser.
 
-Then find your raw material. What you need depends on your track:
+## Track starting points
 
-| Track | What to find |
+| Track | Start with |
 |---|---|
-| **Engineer** | A lint rule you could enable or a deprecated API in 3+ files; a module with logic and no tests |
-| **Platform** | A convention your team enforces socially but never wrote down |
-| **Product** | Your real unsorted feedback, and the vaguest request in your backlog |
-| **Data** | A schema you inherited, your slowest dashboard query, a migration you've been avoiding |
+| Engineer | `INCIDENT-4552` in `FEEDBACK.md`; green baseline |
+| Platform | Conflicting router conventions; no Copilot customization |
+| Product | Entire raw `FEEDBACK.md`; no pre-triaged backlog |
+| Data | Freshly generated `orders.db`; unchanged `schema.sql` |
 
-> **Data track guardrail:** work against a replica or a local dump, never production. Don't paste customer PII into a prompt, and don't let an agent run DDL against a live database. If your org has a data classification policy, this is where it applies.
+## Safety
 
-> If you can't find raw material for an exercise, switch to Track A for that one. Mixing is fine.
+- Work on a branch, never `main`.
+- Use only the synthetic sample app or an authorized repository.
+- Never connect lab agents to production systems.
+- Never give a data agent write access until reconciliation is captured.
+- Do not merge exercise pull requests into the shared student baseline.
 
----
+## Ready checklist
 
-## Baseline checklist
-
-Run this before the clock starts:
-
-- [ ] You've picked a track
-- [ ] `copilot --version` works *(Engineer, Data)*
-- [ ] IDE opens the repo and Copilot agent mode responds *(Engineer, Platform, Data)*
-- [ ] github.com loads and you can see your fork *(all tracks)*
-- [ ] `pytest -q` shows 13 passed *(sample app)*
-- [ ] `ruff check .` is clean *(sample app)*
-- [ ] `sqlite3 data/orders.db "SELECT COUNT(*) FROM orders;"` returns 50000 *(Data)*
-- [ ] Your own test suite passes on a clean checkout *(own repo)*
-- [ ] You're on a branch, not `main`
-
----
-
-## What's in the sample app
-
-Worth two minutes of reading before you start — the exercises assume you've seen this.
-
-```
-sample-app/
-  app/
-    main.py              FastAPI wiring
-    models.py            Pydantic models
-    store.py             In-memory persistence
-    pricing.py           Subtotal, discount, tax
-    routers/
-      orders.py          Error style A: raises HTTPException
-      customers.py       Error style B: returns {"error": ...} with a 200
-  tests/
-    test_orders.py       7 tests
-    test_customers.py    6 tests
-  data/
-    schema.sql           Analytics replica schema
-    build_db.py          Generates 50k orders, deterministically
-  FEEDBACK.md            12 unsorted support tickets and Slack messages
-```
-
-Six things are true about this codebase, and each one matters to at least one track:
-
-1. **The two routers handle errors incompatibly.** Both styles are present, so an agent pattern-matching this repo can't know which one you want. *(Platform)*
-2. **`pricing.py` has no tests.** It also has a real boundary bug. *(Engineer, Product)*
-3. **`datetime.utcnow()` is deprecated and used in three files.** *(Engineer)*
-4. **`FEEDBACK.md` is twelve unsorted complaints**, several sharing one root cause. *(Product)*
-5. **The analytics database disagrees with the application** about how money is represented, and has 394 orphaned orders, 60 duplicate customers, and no indexes. *(Data)*
-6. **There is no Copilot configuration whatsoever.** *(Platform fixes this)*
-
-None of that is accidental.
+- [ ] Correct persona track selected.
+- [ ] Repository or fork available.
+- [ ] Two VS Code chat sessions can run independently where required.
+- [ ] Agent picker works.
+- [ ] Baseline shows 13 passing tests and clean Ruff.
+- [ ] Cloud agent availability known, or fallback plan accepted.
+- [ ] Data track database contains 50,000 orders.
+- [ ] Working branch is not `main`.

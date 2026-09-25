@@ -1,198 +1,142 @@
-# Track: Platform / DevEx Lead
+# Track: Platform / Developer Experience Lead
 
-**Surface emphasis:** Configuration artifacts + MCP
-**Matrix cell:** Org holds the context
-**5 exercises · ~15 min each · first 3 are core**
-
-Your output isn't code. It's **leverage** — making two hundred other engineers faster without sitting next to each of them.
-
-> **The through-line:** every exercise changes what an agent produces *without touching a model, a prompt, or a setting.* You're building the context supply chain, and it's the layer most orgs skip on their way from "we bought licenses" to "why isn't this working."
-
-| # | Exercise | Time | Core? |
-|---|---|---|---|
-| 1 | [Prove the problem exists](#1--prove-the-problem-exists) | 15 | ✅ |
-| 2 | [Scope it down](#2--scope-it-down) | 12 | ✅ |
-| 3 | [Package a repeated workflow](#3--package-a-repeated-workflow) | 15 | ✅ |
-| 4 | [Build a custom agent](#4--build-a-custom-agent) | 15 | |
-| 5 | [Reach outside the repo](#5--reach-outside-the-repo) | 15 | |
+**Duration:** 75–80 minutes
+**Surfaces:** VS Code, repository customization, agent picker, pull requests
+**Outcome:** Build and validate a paved road for safe Orders Service changes.
 
 ---
 
-## 1 · Prove the problem exists
+## Scenario
 
-**15 min · Repo instructions**
+The repository contains conflicting API conventions, undocumented money and
+timestamp rules, and autonomous work arriving through pull requests. Your job
+is not to fix one endpoint. It is to make safe behavior repeatable.
 
-The sample app has a problem no model upgrade will fix:
+## Exercise 1 — Audit agent readiness
 
-- `routers/orders.py` raises `HTTPException` with a structured detail body
-- `routers/customers.py` returns `{"error": ...}` with a **200 status**
+**15 minutes**
 
-Both patterns are in the codebase. An agent pattern-matching this repo **cannot know which one you want.** It guesses, and it's right about half the time.
+In a fresh normal-agent session, ask:
 
-That's not a capability gap. It's an **unwritten-knowledge gap**, and it's yours.
+> Add a refund endpoint following this repository's conventions. Plan only; do
+> not edit.
 
-### Capture the "before"
+Record every assumption it makes:
 
-In agent mode, ask:
+- Error response shape.
+- Eligible order states.
+- Full versus partial refunds.
+- Maximum refundable amount.
+- Idempotency.
+- Money representation.
 
-```
-Add a GET /orders/{order_id}/status endpoint returning just the order status.
-Follow the conventions already used in this codebase.
-```
+Inspect the repository and classify each assumption as:
 
-**Don't accept the change.** Record which error style it picked and whether it explained the choice. Then discard it.
+- Inferable and consistent.
+- Conflicting precedent.
+- Missing product decision.
+- Missing engineering standard.
 
-> Compare with the person next to you. If you got different conventions from the identical prompt on the identical repo, you've just demonstrated the entire problem.
+**Deliverable:** an agent-readiness gap list grounded in repository evidence.
 
-### Write the instructions
+## Exercise 2 — Write durable repository instructions
 
-Create `.github/copilot-instructions.md`. **Under 40 lines.** Cover only what an agent can't infer from the code:
+**15 minutes**
 
-- The error-handling convention — pick one, and state that `customers.py` is deprecated and must not be copied
-- Verification expectations — which commands must pass
-- Money is integer cents, never floats
-- Timestamps are timezone-aware
+Create `.github/copilot-instructions.md`. Keep it focused on durable standards:
 
-> Resist writing everything. Every line loads on every interaction, competing for attention and costing tokens. A 400-line instructions file is a monument to a problem somebody solved once. **If a line doesn't change what the agent does, delete it.**
+- New API errors use structured `HTTPException` responses.
+- Existing customer error behavior is a compatibility concern.
+- Application money uses integer cents.
+- New timestamps are timezone-aware UTC.
+- Required verification commands.
+- Existing product decisions must not be invented.
 
-### Prove it
+Start a fresh session and confirm the file appears in the context indicator.
+Ask a small planning question and verify the response applies the standards.
 
-Start a **fresh session** — step 1's context will pollute the result otherwise. Run the identical prompt.
+Remove any instruction that does not measurably change behavior.
 
-Then find the context indicator in your IDE and confirm the file actually loaded. This is the difference between trusting your configuration and verifying it.
+**Deliverable:** concise instructions plus evidence they loaded.
 
-**Done when:** same prompt, different output, and you can point at evidence it was loaded.
+## Exercise 3 — Build a bounded custom agent
 
----
+**20 minutes**
 
-## 2 · Scope it down
+Create `orders-api-maintainer.agent.md`.
 
-**12 min · Path-scoped instructions**
+The agent should be able to:
 
-Repo-wide instructions are the blunt instrument. Path-scoped rules load **only when relevant** — same guidance, a fraction of the always-on cost. This is the single most underused piece of the system.
+- Read and edit application and test code.
+- Run focused tests, the full suite, and Ruff.
 
-Create `.github/instructions/tests.instructions.md`:
+It should be unable or instructed not to:
+
+- Change dependencies or CI.
+- Modify analytics fixtures.
+- Change an existing API contract without an approved decision.
+- Invent refund policy.
+
+Give it stop conditions for missing monetary, authorization, compatibility, or
+retention rules.
+
+Select the custom agent and repeat the refund task.
+
+Expected: it asks for decisions instead of fabricating an endpoint contract.
+
+Test one allowed request and one prohibited request.
+
+**Deliverable:** a custom agent whose boundaries are demonstrated, not merely
+documented.
+
+## Exercise 4 — Add path-scoped guidance
+
+**15 minutes**
+
+Create scoped instructions for tests:
 
 ```markdown
 ---
 applyTo: "sample-app/tests/**"
 ---
-- Use the existing `client` and `reset_store` fixtures; don't build new ones.
-- Assert on status codes and response bodies, not implementation details.
-- One behavior per test. Name tests for the behavior, not the function.
+- Reuse existing fixtures.
+- Assert resource ownership when filtering by customer.
+- Assert status and response body for API behavior.
+- One observable behavior per test.
 ```
 
-Ask the agent to add a test for an existing endpoint. Check whether the scoped rules applied.
+Run one test-generation task and confirm the scoped instructions load. Then run
+a non-test task and confirm they do not.
 
-Then ask it to add a *non-test* file and confirm they **didn't**.
+Discuss whether ownership assertions belong only in test guidance or also in
+the repository-wide security expectations.
 
-**Done when:** you've demonstrated the rules firing in one path and staying silent in another.
+**Deliverable:** proof that guidance activates only in its intended scope.
 
-### Stretch
-Add a second scoped file for `app/routers/**` encoding the error convention. Now ask yourself the design question: should that live in the scoped file, the repo-wide file, or both? Defend your answer.
+## Exercise 5 — Validate against asynchronous work
 
----
+**10–15 minutes**
 
-## 3 · Package a repeated workflow
+Review a cloud-agent pull request such as the timestamp migration.
 
-**15 min · Prompt files**
+Use your instructions and custom review criteria to answer:
 
-Instructions are passive — always on, shaping everything. Prompt files are **active**: you invoke them for a specific job.
+- Would the agent have received the same standards?
+- Did the PR cross a stop condition?
+- Which checks prove mechanics, and which policy decisions still need humans?
+- What rollout telemetry would show whether this paved road improves outcomes?
 
-Pick something your team genuinely repeats. Good candidates in this repo:
+Revise one instruction or agent boundary based on the review.
 
-- Add a new endpoint following house conventions
-- Generate characterization tests for an untested module
-- Produce release notes from a diff
-- Review a PR against a specific checklist
+**Deliverable:** one evidence-driven customization improvement.
 
-Write the prompt file. Give it a clear name, explicit scope, explicit constraints, and a defined deliverable.
+## Done
 
-Then **hand it to someone else at your table** and have them run it without explanation.
+You are done when another attendee can select your agent and get the intended
+safe behavior without you narrating beside them.
 
-**Done when:** a colleague invoked it and got a useful result without you narrating.
+## Own-repository variant
 
-> That last step is the actual test. A prompt file that only works when its author is standing there isn't leverage — it's a bookmark.
-
----
-
-## 4 · Build a custom agent
-
-**15 min · Custom agents**
-
-A prompt file is a task. A custom agent is a **mode of work** — a persona plus tool restrictions.
-
-Build one for a real role on your team. Suggestions:
-
-**A migration agent** — may edit source and run tests, may *not* touch CI config or dependencies. Must verify before reporting done.
-
-**A review agent** — read-only. Cannot edit anything. Reports findings against your conventions.
-
-**A test-writer** — may only create files under `tests/`.
-
-The restrictions are the interesting part. Ask yourself: what would I want an agent *unable* to do while it works unsupervised?
-
-**Done when:** the agent runs, and you've confirmed it actually refuses something outside its scope.
-
----
-
-## 5 · Reach outside the repo
-
-**15 min · MCP**
-
-Your codebase is maybe 40% of the context an engineer needs. The rest — what's broken right now, who owns this service, what was decided in that review, the state of production — is in systems the repo can't see.
-
-MCP is where *"Copilot knows our codebase"* becomes *"Copilot knows our company."*
-
-1. Ask a question that's unanswerable from the repo alone. Watch it fail or hedge.
-2. Wire up an MCP server.
-3. Ask again.
-4. **Confirm the same configuration applies in the IDE, the CLI, and the cloud agent.** Build once, propagates everywhere.
-
-> **Guardrail:** treat every MCP server like a new integration with production data access — because that's what it is. Don't connect systems you aren't authorized to connect in a lab. If you're unsure, skip this and do the stretch on exercise 2 instead.
-
-**Done when:** the agent answered something it demonstrably couldn't answer fifteen minutes earlier.
-
----
-
-## Track B — your own repo
-
-The only exercise that needs real thought is the first one, and the question is:
-
-> **What does every new hire get told in code review that isn't written down anywhere?**
-
-That's your instructions file. It's usually three to six things and you already know all of them.
-
-| # | What to find |
-|---|---|
-| 1 | A convention your team enforces socially but never documented |
-| 2 | A directory with rules that don't apply elsewhere — tests, migrations, infra |
-| 3 | The task your team does most often by hand |
-| 4 | A job you'd want done with restricted permissions |
-| 5 | The internal system Copilot most needs to see |
-
----
-
-## Common failure modes
-
-**Output didn't change in exercise 1.**
-Filename and path first — that's the usual cause. Then a fresh session. Then ask whether your instruction was *actionable*; "write clean code" changes nothing.
-
-**Output changed and got worse.**
-Genuinely useful result. Your instructions are over-specified or contradict something real in the codebase. This is what "instructions are a code artifact that can have bugs" means in practice.
-
-**You wrote 200 lines.**
-Cut to 40. Then notice which 160 you didn't miss.
-
-**It followed the convention in new code but didn't fix `customers.py`.**
-Correct behavior. Instructions govern what it *writes*, not a mandate to refactor everything it reads.
-
----
-
-## The point
-
-You changed the output of an AI system without touching a model, a prompt, or a setting — by writing down something your team already knew but had never recorded.
-
-**The tool didn't change. What it could see did.**
-
-And notice the failure mode you *didn't* hit: none of this required a bigger budget, a better model, or a vendor conversation. It required someone to own it. **If nobody owns the context supply chain, it doesn't exist.**
+Start with the recurring review comments every new hire receives. Encode only
+the durable standards, then test them against a real task with an allowed path,
+a prohibited path, and a missing-decision path.

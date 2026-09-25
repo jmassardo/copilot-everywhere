@@ -1,136 +1,93 @@
-# Copilot Everywhere — Lab Syllabus
+# Copilot Everywhere — Persona Labs
 
 **Duration:** 90 minutes
-**Format:** Pick one persona track. Five exercises, all appropriate to that role.
-**Works with:** the included [sample app](../sample-app/) *or* your own repository
+**Format:** Choose one persona track and complete one connected workflow
+**Workbench:** the included `sample-app/` or an equivalent repository you own
 
 ---
 
-## Pick your track
+## Pick one track
 
-You do **one** track, not all four. Choose the one closest to how you actually spend your day.
-
-| Track | You are | Surface emphasis |
+| Track | You are | Primary Copilot workflow |
 |---|---|---|
-| **[Engineer](tracks/engineer.md)** | Senior / staff engineer | Copilot CLI |
-| **[Platform](tracks/platform.md)** | Platform / DevEx lead | Configuration + MCP |
-| **[Product](tracks/product.md)** | PM, BA, support lead, TPM | github.com + coding agent |
-| **[Data](tracks/data.md)** | DBA, analytics engineer, data scientist | github.com + CLI + SQL |
+| **[Engineer](tracks/engineer.md)** | Senior/staff engineer | Parallel sessions, agent selection, local implementation, cloud delegation |
+| **[Platform](tracks/platform.md)** | Platform/DevEx lead | Repository instructions, custom agents, restrictions, rollout validation |
+| **[Product](tracks/product.md)** | PM, BA, support lead, TPM | Repository-grounded discovery, issue design, delegation, acceptance |
+| **[Data](tracks/data.md)** | DBA, analytics engineer, data scientist | Read-only investigation, parallel hypotheses, reconciliation, bounded change |
 
-Each track has five exercises. The **first three are core** — do those. Four and five exist so fast movers don't run out, and so you have something to take home.
+Each track is designed to take **75–80 minutes**, plus a **10-minute shared
+debrief**. The first exercises establish context; later exercises build on their
+artifacts. This is not a collection of five disconnected prompts.
 
-> **Not sure?** Pick the track matching the work you'd most like to get time back on. If you split your week evenly between two, take the one you're *worse* at.
+## The shared scenario
 
----
+Everyone works with the same Orders Service and backlog:
 
-## Why tracks instead of a shared sequence
+- A customer-isolation incident escaped despite green CI.
+- Pricing has uncovered boundary and rounding defects.
+- API error behavior is inconsistent.
+- Refund requests lack product rules.
+- Timestamp code is deprecated.
+- The analytics replica is slow, internally inconsistent, and semantically
+  ambiguous in places.
 
-An earlier version of this lab walked everyone through one exercise per persona. It had a fatal flaw: it made product managers write tests and engineers write release notes.
+The talk shows these workflows in compressed form. The lab gives each persona
+time to do the work properly: investigate, make decisions, select an agent,
+hand work between sessions, delegate when appropriate, and review evidence.
 
-That teaches the wrong lesson twice. The PM concludes this stuff isn't for them. The engineer concludes the PM exercises are filler.
+## Why persona tracks
 
-**Copilot's actual claim is that it meets people where they already work.** A lab should do the same. So every exercise in every track is work that persona genuinely does.
+Copilot should meet people where they work. The lab does the same:
 
----
-
-## What this lab is
-
-The talk argues that most "Copilot doesn't work for this" complaints are **routing mistakes** — the right work sent to the wrong surface. This lab makes you route your own work, five times, in your own role.
-
-Two questions run through every exercise:
-
-1. Which surface does this work belong on?
-2. **How would I know if it came back right?**
-
-That second one is the spine. Every exercise has an explicit, checkable *done* condition. If you finish and can't point at evidence, you haven't finished.
-
----
-
-## Prerequisites
-
-| Requirement | Needed for |
-|---|---|
-| GitHub account with Copilot enabled | All tracks |
-| Access to github.com | All tracks |
-| Copilot CLI, installed and authenticated | **Engineer**, Data |
-| IDE with Copilot agent mode | **Platform**, Engineer, Data |
-| Python 3.11+ | Sample app and the analytics database |
-| A SQLite client | **Data** only |
-| A repo you can open PRs against | Own-repo track only |
-
-Full setup: **[setup.md](setup.md)**. Do it **before** the lab — in-class setup is 10 minutes, and that's verification time, not install time.
-
-> **The product track needs the least.** If you're a PM, a browser and a GitHub account carry you through all five exercises. That isn't a limitation of the track — it's the point of it.
-
----
-
-## Choose your material
-
-### Track A — the sample app
-A small FastAPI orders service with deliberately seeded problems: an ambiguous error convention, an untested pricing module with a real boundary bug, a deprecated API used across several files, twelve unsorted customer complaints, and no Copilot configuration at all.
-
-It also ships an **analytics replica** — a 50,000-order SQLite database with orphaned rows, duplicate customers, seven spellings of four statuses, missing indexes, and a NULL whose meaning nobody recorded.
-
-Pick this if you can't use company code in a lab, want predictable results, or want to compare with your neighbor.
-
-### Track B — your own repo
-Every exercise has a "**Your repo**" variant describing the *shape* of work to find. Better learning, messier failure modes. Both are true at once.
-
-> **Guardrail:** work on a branch, don't point agents at production config, and don't wire MCP servers to systems you aren't authorized to connect. If you have to think about whether it's okay, use Track A for that exercise.
-
----
+- Engineers do not write release notes as a proxy for using AI.
+- PMs do not write unit tests to prove they are “technical.”
+- Platform leads create reusable leverage rather than fixing one endpoint.
+- Data professionals do not accept a plausible number without reconciliation.
 
 ## Schedule
 
-| Time | Block |
+| Clock | Activity |
 |---|---|
-| 0:00 | [Setup & baseline verification](setup.md) |
-| 0:10 | Exercise 1 |
-| 0:25 | Exercise 2 |
-| 0:40 | Exercise 3 |
-| 0:55 | Exercise 4 *(or go deeper on 1–3)* |
-| 1:10 | Exercise 5 *(or go deeper on 1–3)* |
-| 1:22 | Debrief — **all tracks together** |
+| 0:00–0:10 | Setup verification and track seating |
+| 0:10–0:25 | Exercise 1 |
+| 0:25–0:45 | Exercise 2 |
+| 0:45–1:00 | Exercise 3 |
+| 1:00–1:15 | Exercise 4 |
+| 1:15–1:25 | Exercise 5 / workflow closeout |
+| 1:25–1:35 | Shared debrief |
 
-Timings are per-track guidance; exercises run 12 to 18 minutes. **Three finished properly beats five rushed.**
+For a strict 90-minute slot, begin setup before the official start or shorten
+Exercise 5 to its required deliverable.
 
----
+## Shared operating rules
 
-## What each track covers
+1. Work on a branch or fork, never directly on `main`.
+2. Use synthetic data and non-production systems only.
+3. Keep independent questions in independent sessions.
+4. Start with read-only/planning agents when the problem is not yet understood.
+5. Delegate asynchronously only when scope and verification are explicit.
+6. Review outputs at the level your persona owns.
+7. A green agent summary is not evidence; point to the test, diff, query plan,
+   acceptance criterion, or reconciliation result.
 
-**[Engineer](tracks/engineer.md)** — cross-cutting migration · characterization tests on untested code · Copilot in a shell pipeline · debugging from a reproduction · packaging it into a reusable agent
+## Setup
 
-**[Platform](tracks/platform.md)** — proving the unwritten-knowledge gap exists · path-scoped instructions · prompt files a colleague can run cold · custom agents with tool restrictions · MCP
+Complete [setup.md](setup.md) before the lab.
 
-**[Product](tracks/product.md)** — answering your own codebase questions · triaging raw feedback into themes · specifying agent-ready issues and sorting bugs from decisions · delegating and accepting against acceptance criteria · release notes and stakeholder comms
+## Shared debrief
 
-**[Data](tracks/data.md)** — reading a schema you inherited · quantifying data quality problems instead of gossiping about them · query plans and the index that's actually needed · migrating without lying about it · analysis you'd defend in a review
+Bring one artifact from your track:
 
----
+- **Engineer:** the strengthened ownership test and session handoff.
+- **Platform:** the instruction or custom-agent rule that changed behavior.
+- **Product:** an issue criterion tied to evidence or a decision deliberately
+  left undelegated.
+- **Data:** a before/after query plan or a question the data could not answer.
 
-## Debrief — everyone together
+Discuss:
 
-Save 8 minutes. This is the only part where tracks hear each other, and it's where the lab's argument closes.
-
-1. **Round the room by track:** what was the single most useful thing your track did?
-2. Where did you spend more time verifying than you'd have spent just doing the work?
-3. **For the platform track:** did anyone else's results change because of configuration you wrote?
-4. **For the data track:** how was your verification story different from everyone else's — and what did that cost you?
-5. What did the tool do *worst* at — and was that a capability limit or a routing mistake?
-6. Which of these workflows survives contact with your actual team on Monday, and what has to be true first?
-
-> Questions 3 and 4 are the ones to protect. Question 3 shows context propagating between attendees. Question 4 is where the room discovers that "how much can I delegate" depends on how cheaply you can check the answer — and that it varies enormously by discipline.
-
----
-
-## If you finish early
-
-- **Run an exercise on a different surface** and compare. The engineer track's exercise 1 in agent mode instead of the CLI is the most instructive swap available.
-- **Break your configuration deliberately.** Write an instruction that's subtly wrong and watch an agent confidently propagate it. Experiencing "stale instructions are worse than none" beats hearing it.
-- **Try another track's exercise 1.** Fifteen minutes in someone else's shoes is the cheapest empathy in the building.
-
----
-
-## Facilitators
-
-See **[facilitator-guide.md](facilitator-guide.md)** for track balancing, timing checkpoints, expected failure points, and what to do when someone's environment is broken.
+1. Which session or agent did you choose first, and why?
+2. What work ran concurrently without creating merge or reasoning conflicts?
+3. What evidence let you increase autonomy?
+4. Where did an agent need to stop for a human decision?
+5. Which artifact would your team reuse on Monday?

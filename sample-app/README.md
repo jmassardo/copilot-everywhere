@@ -45,13 +45,14 @@ tests/
 
 | # | Seam | Where | Used by |
 |---|---|---|---|
-| 1 | Two incompatible error-handling conventions | `routers/orders.py` vs `routers/customers.py` | Ex 2, 4 |
-| 2 | Discount tier boundary is exclusive (`>` not `>=`) | `pricing.discount_rate_for` | Ex 3, 4 |
-| 3 | Money truncated via `int()` on floats | `pricing.calculate_totals` | Ex 3 |
-| 4 | Zero test coverage for pricing | no `tests/test_pricing.py` | Ex 3 |
-| 5 | Deprecated `datetime.utcnow()` in 3 files | `store.py`, both routers | Ex 1 stretch |
-| 6 | `UP` lint rule disabled, 6 violations waiting | `pyproject.toml` | Ex 1 |
-| 7 | No Copilot configuration at all | repo root | Ex 2 |
+| 1 | Two incompatible error-handling conventions | `routers/orders.py` vs `routers/customers.py` | Platform, Product |
+| 2 | Discount tier boundary is exclusive (`>` not `>=`) | `pricing.discount_rate_for` | Product |
+| 3 | Money truncated via `int()` on floats | `pricing.calculate_totals` | Product, Data |
+| 4 | Zero test coverage for pricing | no `tests/test_pricing.py` | Product |
+| 5 | Deprecated `datetime.utcnow()` in 3 files | `store.py`, both routers | Engineer, Platform |
+| 6 | `UP` lint rule disabled, 6 violations waiting | `pyproject.toml` | Optional extension |
+| 7 | No Copilot configuration at all | repo root | Platform track |
+| 8 | Customer filter returns another customer's orders while the weak test stays green | `store.list_orders`, `test_list_orders_filters_by_customer` | Engineer track |
 
 ### Seam 2, demonstrated
 
@@ -63,13 +64,26 @@ tests/
 0.1                             # should be 0.15
 ```
 
-An order for exactly $100.00 gets no discount. One cent more gets 5%. This is the bug behind the stakeholder complaint in exercise 3.
+An order for exactly $100.00 gets no discount. One cent more gets 5%. This is
+the objective bug the Product track turns into agent-ready work.
 
 ### Seam 1, why it matters
 
 Both error conventions are present in the codebase, which means an agent pattern-matching this repo **cannot infer which one you want.** It will guess, and it will be right about half the time.
 
-That's not a model limitation. It's unwritten knowledge — which is what exercise 2 fixes.
+That's not a model limitation. It's unwritten knowledge — which the Platform
+track turns into durable instructions and agent boundaries.
+
+### Seam 8, why it matters
+
+The customer filter uses `!=` instead of `==`, but the existing test only checks
+that one result is returned. With one order per customer, both the correct and
+incorrect implementations return a list of length one. CI stays green while the
+service returns another customer's data.
+
+This is the incident behind the Engineer track. Students start from a credible
+support escalation, reproduce the behavior, strengthen the test, and only then
+fix the implementation.
 
 ---
 
@@ -90,4 +104,6 @@ pytest -q && ruff check .
 
 Don't fix these seams in `main`. The whole app is a fixture.
 
-If you fork this for your own org, the seams worth preserving are **1** (ambiguous convention) and **4** (untested module with a real bug) — those two carry most of the lab's weight.
+If you fork this for your own org, the seams worth preserving are **1**
+(ambiguous convention), **4** (untested money code), and **8** (green tests
+masking a customer-isolation defect). Those carry most of the lab's weight.

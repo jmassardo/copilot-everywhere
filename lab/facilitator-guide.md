@@ -1,194 +1,188 @@
 # Facilitator Guide
 
-Everything needed to run the 90-minute lab, including what breaks and when.
+**Lab runtime:** 90 minutes
+**Track work:** 75–80 minutes
+**Shared debrief:** 10 minutes
 
 ---
 
-## The structural decision
+## What changed
 
-Attendees pick **one track** and do five exercises inside it. They do not rotate.
+The lab no longer teaches isolated prompts or contrived failures. Each track
+completes one realistic workflow using the same Orders Service backlog.
 
-This is deliberate, and worth defending out loud if asked. The earlier one-exercise-per-persona design made PMs write tests and engineers write release notes — teaching the wrong lesson twice. Copilot's claim is that it meets people where they work. The lab has to do the same or it undercuts the talk.
+The key Engineer scenario is deliberately green in CI: the customer-filter test
+checks only result count, so the wrong customer's order still satisfies it.
+Do not “fix the baseline” before attendees begin.
 
-**Consequence for you:** four things happen at once in the room. Plan for it.
+## Room setup
 
----
+Seat by track. Four workflows run concurrently.
 
-## Room shape
-
-Works for 8 to 60. Above ~30 you want a second floater — setup failures cluster in the first fifteen minutes and one person can't unblock them all.
-
-**Seat by track.** The single highest-leverage thing you control. Put a "Product" sign on one table, "Engineer" on another. It makes peer unblocking work and makes the debrief coherent.
-
-### Expected distribution
-
-Most rooms skew heavily to Engineer. Budget accordingly:
-
-| Track | Typical share | Watch for |
+| Track | Primary need | Facilitator watchpoint |
 |---|---|---|
-| Engineer | 40–60% | May need two tables |
-| Data | 10–25% | Needs the database built — verify in setup |
-| Platform | 10–20% | Small but high-influence |
-| Product | 5–20% | **Often under-attended and over-valuable** |
+| Engineer | Multiple sessions and agent handoffs | Do they reproduce before editing? |
+| Platform | Customization support | Do boundaries change behavior? |
+| Product | Browser repository access | Are decisions kept human-owned? |
+| Data | Generated SQLite database | Are writes blocked until reconciliation? |
 
-> **If nobody picks Product:** push one or two people there — especially engineering managers, or anyone who says "I don't really write code anymore." That track has the highest surprise factor in the room and its results land hardest in the debrief.
+For rooms above 30, use a second facilitator. Setup and cloud-agent access issues
+cluster early.
 
-> **If Platform is empty:** you run it. Do exercise 1 live from the front during setup and share the instructions file. Otherwise debrief question 3 has no answer.
+## Before the session
 
-> **If Data is empty:** that's survivable, but you lose debrief question 4 — which is the only place the room confronts a discipline where verification is genuinely hard. Consider seeding it with anyone who touches reporting, ETL, or a warehouse.
+- [ ] Confirm baseline: 13 tests pass and Ruff is clean.
+- [ ] Confirm `INCIDENT-4552` reproduces despite the green suite.
+- [ ] Prepare GitHub issues for the timestamp migration and discount boundary.
+- [ ] Prepare completed fallback PRs for both cloud tasks.
+- [ ] Save example outputs for the Engineer investigation sessions.
+- [ ] Prepare a branch with repository instructions and the custom API agent.
+- [ ] Confirm the custom agent stops on missing refund decisions.
+- [ ] Build the analytics database and capture before/after query plans.
+- [ ] Confirm the `7113` NULL discount count.
+- [ ] Know which attendees lack cloud-agent access.
 
----
+## Timing
 
-## Pre-lab, one week out
+| Clock | Expected state |
+|---|---|
+| 0:10 | Setup verified; tracks seated |
+| 0:25 | First artifact complete |
+| 0:45 | Investigation/context phase complete |
+| 1:00 | Implementation or customization underway |
+| 1:15 | Review/acceptance phase |
+| 1:25 | Stop work and begin debrief |
 
-Send [setup.md](setup.md) with the track table and ask people to **pick a track in advance.** They arrive with the right tools installed, and you get a headcount for seating.
+Do not let setup consume the debrief. Pair broken environments with a working
+neighbor or use prepared artifacts.
 
-Ask for a reply confirming `copilot --version` works — Engineer and Data have no fallback without it. The replies you *don't* get tell you where your morning is going.
+## Opening framing
 
-**Data track attendees:** ask them to run `python data/build_db.py` in advance and confirm the row counts. It takes about a second, but it's the step that silently blocks the whole track.
+> The talk showed these workflows in ten minutes each. You have roughly eighty
+> minutes because real work includes investigation, decisions, handoffs,
+> verification, and review. Your goal is not to finish five prompts. Your goal
+> is to complete one workflow you would defend at work.
 
----
+Then:
 
-## Pre-lab, day of
+> Keep independent questions in independent sessions. Start read-only when you
+> do not understand the problem. Delegate only bounded work. Bring evidence to
+> the debrief, not an agent's claim that it succeeded.
 
-- [ ] Sample app cloned, `pytest -q` green on your machine
-- [ ] Your own fork ready to demo from
-- [ ] A completed artifact for each track's exercise 1, parked in tabs as fallback
-- [ ] Know your org's MCP policy — someone will ask
-- [ ] Confirm the coding agent is available to attendees; if not, announce the Product exercise-4 fallback up front
-- [ ] Track signs on tables
+## Engineer facilitation
 
----
+### Preserve the surprise
 
-## Timing checkpoints
+Do not point out the `!=` operator. Let the investigation find it.
 
-| Clock | Should be | If behind |
-|---|---|---|
-| 0:10 | Green baseline, everyone seated by track | Pair broken with working. Don't debug one laptop while 40 people wait. |
-| 0:40 | Everyone into exercise 3 | Announce 4 and 5 are optional — many will have guessed already |
-| 1:10 | People on 4, 5, or deepening | Start collecting debrief-worthy findings so you're not cold-starting |
-| 1:22 | Debrief begins | **Stop people mid-exercise.** Protect this. |
+If attendees say “tests pass, so the incident is wrong,” ask what invariant the
+existing test actually asserts.
 
-The debrief is the only part where tracks hear each other, and the first thing to get eaten. Guard it.
+### Parallel sessions
 
----
+The reproduction and blast-radius sessions must have different objectives.
+If attendees paste the same broad prompt into both, stop and have them rewrite
+one.
 
-## The framing to open with
+### Cloud delegation
 
-Say this, roughly:
+The timestamp task is independent only after the incident fix is bounded. Ask
+attendees to compare file scope before delegation. If their local agent is also
+editing router/store timestamps, the work is not safely parallel.
 
-> "Every exercise has a checkable done condition — a passing test, a clean lint run, an acceptance criterion you wrote. That's not lab hygiene, that's the lesson. The reason you can safely give an agent this much autonomy is that you can cheaply tell whether it was right. Teams with good verification can delegate far more than teams without it, using the identical tool."
+### Required artifact
 
-Then the track framing:
+A regression test that asserts ownership, not list length.
 
-> "You're doing one track. You will not write code you wouldn't normally write. If you're a PM, you're doing PM work — I'm not going to make you write a unit test to prove a point."
+## Platform facilitation
 
-That second line reliably gets a laugh from people who've been burned by vendor labs, and it buys you their attention.
+### Instructions are not the whole exercise
 
----
+The custom agent must demonstrate:
 
-## Per-track notes
+- One allowed action.
+- One prohibited action.
+- One missing-decision stop.
 
-### Engineer
-**Most likely to succeed unaided.** Exercise 1 is deliberately easy — it builds confidence before anything conceptual.
+A long persona prompt without restrictions or stop conditions is incomplete.
 
-**The beat to amplify:** when someone's agent runs tests, reads a failure, and fixes itself, have them say it out loud to the room. Most people have never seen level-4 autonomy and it rewrites their mental model on the spot.
+### Refund scenario
 
-**Watch for:** people running `ruff --fix` and declaring victory. Redirect — the point is the agent loop, not the autofixer.
+Do not provide refund policy. The correct agent behavior is to identify missing
+decisions rather than invent them.
 
-**Exercise 2 is the sleeper.** Characterization testing to *discover* a bug rather than fix a known one is a technique most engineers haven't used. If the room is strong, spend extra time here.
+### Required artifact
 
-### Platform
-**Hardest to facilitate**, because the payoff is invisible if people rush exercise 1's "before."
+One customization rule that visibly changes or stops behavior.
 
-**Insist on the before/after.** People want to skip to writing instructions. Without the before, the proof step proves nothing.
+## Product facilitation
 
-**Seed the moment:** during exercise 1, find two people who got *different* error conventions from the identical prompt. Have them announce it. That's the whole argument, delivered by an attendee instead of by you.
+### Protect the bug/decision distinction
 
-**Watch for:** 200-line instructions files. Warmly — "which 160 of those change what the agent does?"
+The discount boundary is delegatable. Refund policy, customer deletion, and
+breaking error semantics are not ready until someone chooses a contract.
 
-**Output didn't change?** Filename and path first, fresh session second, actionability third. It's almost always the first.
+If attendees create implementation criteria for an unresolved decision, ask:
+“Who chose that behavior, and where is the evidence?”
 
-### Product
-**The track most likely to exceed expectations, and most likely to be under-attended.**
+### PR review
 
-**Enforce browser-only.** Engineers who wandered in will drift to an IDE by reflex. The constraint is the lesson.
+PMs review observable behavior, acceptance, and scope. Redirect anyone trying
+to assess Python style.
 
-**The bug-vs-decision sort in exercise 3 is the highest-value five minutes in the lab.** Don't let it get rushed. If compressing, take time from exercise 1.
+### Required artifact
 
-**Exercise 4's framing needs protecting:** they review against *acceptance criteria*, not code quality. If you see a PM squinting at syntax, redirect. "Does it do what you asked?" is the only question.
+One delegatable issue and one decision issue that intentionally cannot be sent
+to an agent.
 
-**Terminology:** use *dev-adjacent*, never "non-technical." If an attendee says it, one gentle sentence is worth it — the distinction is operationally useful, not just polite.
+## Data facilitation
 
-### Data
-**The track that makes the lab's thesis land hardest**, because it's the one where verification is genuinely expensive.
+### Enforce read-only investigation
 
-**Open it with the framing, don't let them skip it.** Every other track has `pytest`. This one has a query that returns a plausible wrong number and no exception. If they internalize only that, the track worked.
+The first two exercises must not mutate the database. If attendees add an index
+before capturing reconciliation and the query plan, rebuild and restart that
+phase.
 
-**Exercise 2 is the core.** Counting the problems is easy; the valuable part is the `discount_rate IS NULL` ambiguity — 7,113 rows where NULL means two different things and **no query can tell you which.** Attendees will try to solve it technically. Let them try for a minute, then name it: this is a conversation, not a query.
+### Separate symptoms
 
-**Exercise 3 has the best single artifact in the lab.** `EXPLAIN QUERY PLAN` returns `SEARCH o USING AUTOMATIC COVERING INDEX` — SQLite literally announcing it had to build an index at runtime because the schema didn't provide one. Point at it. The N+1 shape goes from ~0.96s to ~0.009s.
+Slow performance and financial mismatch are not automatically one root cause.
+The separate sessions exist to resist premature convergence.
 
-**Watch for:** accepting the first index suggestion list wholesale. Every index is a write-path tax. Make them justify each one.
+### Preserve the semantic stop
 
-**The trap to let them fall into:** join fan-out through `line_items` inflating every sum. It produces a *completely plausible* number. If someone reports revenue without cross-checking, that's your debrief material — with their permission.
+`discount_rate IS NULL` cannot be disambiguated from the data. Let attendees
+try, then require an explicit human/data-contract handoff.
 
----
+### Required artifact
 
-## Cross-track connection
+A before/after plan plus unchanged reconciliation, or an explicit
+“cannot determine” memo with a named owner.
 
-Two moments worth engineering deliberately.
+## Cloud-agent fallback
 
-**Platform → anyone.** Have a Platform attendee share their `.github/copilot-instructions.md` with an Engineer or Data attendee mid-lab, and have the recipient re-run an exercise with it in place. That's the most convincing demonstration in the lab, and it happens between two attendees rather than from the front.
+Cloud completion time is nondeterministic.
 
-**Data ↔ Engineer.** The analytics database stores money as `REAL`; the application uses integer cents. **Neither side knows.** If you have both tracks running, get one person from each to compare notes out loud during the debrief — it's a live example of a bug that's invisible from inside either codebase, and it's exactly the class of problem that needs org-level context rather than repo-level context.
+1. Attendees should delegate once and continue.
+2. Do not poll repeatedly.
+3. At review time, use their result if complete.
+4. Otherwise use the prepared PR and perform the same acceptance exercise.
 
----
+The learning objective is routing and review, not waiting for infrastructure.
 
-## Expected failure points, ranked
+## Shared debrief
 
-1. **Copilot CLI not installed or authenticated** — by far the most common. Only fixable before the lab. Fallback: move them to Product, which needs none of it.
-2. **Python version issues** — `pydantic` source-builds on 3.14. This repo's floor-pinned requirements handle it; people on a stale fork hit a Rust compile error.
-3. **Data track: database not built** — one command, but it blocks everything. Check it during setup.
-4. **Coding agent not enabled** for the org — hits Product exercise 4 and Engineer stretch work.
-5. **Corporate proxy blocking MCP** — Platform exercise 5, which is why it's last and optional.
-6. **Own-repo attendees picking something too large** — agent stalls, they conclude the tool is bad. Redirect to a subdirectory.
+Ask one representative from each track to show the required artifact.
 
----
+Then ask:
 
-## Questions you will get
+1. What did your first agent/session know, and what was deliberately withheld?
+2. Which tasks ran concurrently, and why were they safe to separate?
+3. What evidence allowed more autonomy?
+4. Where did an agent correctly stop?
+5. Which reusable artifact outlives today's task?
 
-**"Which model should we be using?"**
-Redirect to context. The gap between teams is almost never the model. The Platform track is the evidence.
+Close with:
 
-**"How do we stop people rubber-stamping agent output?"**
-Verification infrastructure, not policy. If tests and CI catch bad changes, rubber-stamping is survivable. If they don't, that problem predates Copilot. The Data track is the sharpest version of this — there's nothing to rubber-stamp *against*.
-
-**"Is this going to replace developers?"**
-It changes what's scarce. When producing code gets cheaper, deciding what to build and verifying whether it's right become the bottleneck. Most orgs aren't staffed for that shift.
-
-**"What about juniors?"**
-The risk isn't that they use it — it's using level-4 autonomy before they can evaluate level-4 output. Pair the autonomy ladder to the experience ladder deliberately.
-
-**"Can we wire up our internal systems?"**
-Yes, and treat every MCP server as a new integration with production data access. Scope permissions, audit reach, don't let individuals connect arbitrary servers unreviewed.
-
-**"Why didn't I get to do the other tracks?"**
-The materials are public — all four are in the repo. Point them at another track's exercise 1 as homework.
-
----
-
-## Running talk and lab together
-
-The lab assumes the talk's vocabulary: routing, the autonomy ladder, the four layers, cheap verification. Running both back to back, skip the concept framing in each track and reference the talk directly.
-
-Standalone, the tracks carry enough context on their own — but budget 5 extra minutes up front for the routing matrix and the verification thesis. Take it from exercise 5.
-
----
-
-## After
-
-Ask for two things before people leave:
-
-1. **One workflow they're changing on Monday.** Specific, not aspirational.
-2. **One thing that didn't work.** You'll learn more from these than from the praise, and it tells you which exercise to rewrite.
+> The value did not come from putting Copilot everywhere. It came from routing
+> work to the right session, agent, and autonomy level—and preserving the human
+> decisions that make the result correct.

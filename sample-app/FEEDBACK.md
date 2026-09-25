@@ -60,3 +60,9 @@ customer and their orders are still there, now pointing at nothing."
 Related to the above — we have no referential integrity between orders and
 customers. It's an in-memory store so it's not catastrophic today, but if we
 ever move to a real DB this becomes a data migration problem.
+
+**INCIDENT-4552** · support escalation · today
+Enterprise customer `cust-001` filtered the orders endpoint by their customer
+ID and received an order belonging to `cust-002`. The unfiltered endpoint
+looked normal. Support reproduced it twice. Treat this as a potential data
+exposure until engineering proves otherwise.
