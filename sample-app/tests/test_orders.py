@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -24,6 +26,12 @@ def _items():
     ]
 
 
+def _assert_utc_timestamp(value):
+    created_at = datetime.fromisoformat(value)
+    assert created_at.tzinfo is not None
+    assert created_at.utcoffset() == timedelta(0)
+
+
 def test_create_order_returns_201(client):
     response = client.post("/orders", json={"customer_id": "cust-001", "items": _items()})
     assert response.status_code == 201
@@ -31,6 +39,7 @@ def test_create_order_returns_201(client):
     assert body["customer_id"] == "cust-001"
     assert body["status"] == "pending"
     assert len(body["items"]) == 2
+    _assert_utc_timestamp(body["created_at"])
 
 
 def test_create_order_unknown_customer_returns_400(client):
