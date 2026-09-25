@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 import pytest
 from fastapi.testclient import TestClient
 
@@ -19,25 +17,19 @@ def client():
     return TestClient(app)
 
 
-def _assert_utc_timestamp(value):
-    created_at = datetime.fromisoformat(value)
-    assert created_at.tzinfo is not None
-    assert created_at.utcoffset() == timedelta(0)
-
-
-def test_list_customers_returns_seeded_customers(client):
+def test_list_customers_returns_seeded_customers(client, assert_utc_timestamp):
     body = client.get("/customers").json()
     assert len(body["customers"]) == 2
     for customer in body["customers"]:
-        _assert_utc_timestamp(customer["created_at"])
+        assert_utc_timestamp(customer["created_at"])
 
 
-def test_reset_recreates_seeded_customers_with_utc_timestamps(client):
+def test_reset_recreates_seeded_customers_with_utc_timestamps(client, assert_utc_timestamp):
     for _ in range(3):
         store.reset()
         body = client.get("/customers").json()
         for customer in body["customers"]:
-            _assert_utc_timestamp(customer["created_at"])
+            assert_utc_timestamp(customer["created_at"])
 
 
 def test_get_customer_returns_customer(client):
@@ -52,13 +44,13 @@ def test_get_missing_customer_returns_error_body(client):
     assert response.json()["error"] == "not found"
 
 
-def test_create_customer_succeeds(client):
+def test_create_customer_succeeds(client, assert_utc_timestamp):
     response = client.post(
         "/customers", json={"email": "new@example.com", "name": "New Person"}
     )
     body = response.json()
     assert body["email"] == "new@example.com"
-    _assert_utc_timestamp(body["created_at"])
+    assert_utc_timestamp(body["created_at"])
 
 
 def test_create_duplicate_email_returns_error_body(client):
