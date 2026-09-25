@@ -5,7 +5,7 @@ See app/routers/customers.py for a second, incompatible style.
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -53,7 +53,7 @@ def create_order(payload: OrderCreate) -> Order:
         id=f"ord-{uuid.uuid4().hex[:8]}",
         customer_id=payload.customer_id,
         items=payload.items,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
         notes=payload.notes,
     )
     return store.save_order(order)
