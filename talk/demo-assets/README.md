@@ -8,25 +8,24 @@ the Orders Service.
 Create issues from the Markdown files in `issues/` before the talk. Keep a
 completed fallback pull request for the two cloud-agent tasks.
 
-## Platform branch
+## Platform fallback
 
-Create a branch from the demo baseline, then copy:
+The normal demo creates the repository instructions and `Orders API Maintainer`
+live with Copilot. `origin/demo/platform-customization` is the fallback if live
+generation fails or runs long.
 
-```bash
-mkdir -p .github/agents
-cp talk/demo-assets/platform/copilot-instructions.md .github/copilot-instructions.md
-cp talk/demo-assets/platform/*.agent.md .github/agents/
-```
+Before the talk, confirm the branch contains:
 
-Open this branch only for the Platform and Data demos. The baseline remains
-unconfigured so the before/after behavior is real.
+- `.github/copilot-instructions.md`
+- `.github/agents/orders-api-maintainer.agent.md`
+- `.github/agents/orders-data-investigator.agent.md`
 
-Use VS Code's Agent Customizations editor to confirm each agent appears and to
-review the available tool list for the installed editor version.
+Keep the branch open on GitHub so the files can be shown without switching the
+local workspace.
 
 ## Reset
 
-- Return local source changes to the prepared baseline branch.
+- Remove the two customization files generated during the live Platform demo.
 - Do not merge the fallback pull requests.
 - Rebuild `sample-app/data/orders.db`.
-- Keep the Platform customization files only on the prepared branch.
+- Keep the fallback branch separate from `main`.

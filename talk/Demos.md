@@ -36,7 +36,7 @@ Expected:
 5. GitHub — `sample-app/FEEDBACK.md`
 6. GitHub — #5 discount-boundary bug
 7. GitHub — prepared fallback PR for #5
-8. VS Code — Platform customization branch from #4
+8. GitHub — fallback branch `demo/platform-customization`
 9. SQLite terminal/client — `data/orders.db`
 
 ## Prepare these VS Code sessions
@@ -195,23 +195,36 @@ Point out assumptions about:
 - Maximum amount
 - Idempotency
 
-## 4:00 — Switch to the #4 branch
+## 4:00 — Build repository instructions live
 
-Show:
+In the `Platform policy` Agent session:
 
-- `.github/copilot-instructions.md`
-- `.github/agents/orders-api-maintainer.agent.md`
+> Create `.github/copilot-instructions.md` for this repository. Keep it under
+> 20 lines and include only rules the code cannot infer consistently:
+> structured errors for new APIs, integer-cent money, timezone-aware UTC,
+> explicit approval before changing existing contracts, no invented product
+> policy, and the focused/full test plus Ruff verification sequence.
 
-Key rules:
+Review the proposed file, then apply it.
 
-- Structured errors for new APIs
-- Integer-cent money
-- Timezone-aware UTC
-- Existing contracts require explicit decisions
-- No invented refund policy
-- Focused tests, full suite, and Ruff
+**Key takeaway:** Instructions capture durable repository context once instead
+of repeating it in every prompt.
 
-## 6:00 — Select the custom agent
+## 6:00 — Build the custom agent live
+
+Open the Agent Customizations editor and generate a workspace agent named
+**Orders API Maintainer**:
+
+> Create a workspace custom agent for safely maintaining the Orders Service
+> API. It may inspect and edit application and test code and run verification.
+> It must not change dependencies, CI, or analytics fixtures. It must stop and
+> request a human decision before changing an existing API contract or
+> inventing refund, money, authorization, retention, or compatibility policy.
+
+Review the generated `.github/agents/orders-api-maintainer.agent.md`, especially
+its tools, boundaries, and stop conditions.
+
+## 8:00 — Test the new agent
 
 Start a fresh session and select **Orders API Maintainer**:
 
@@ -225,7 +238,7 @@ Expected:
 
 Show the customization/context indicator.
 
-## 9:00 — Key takeaways
+## 9:30 — Key takeaways
 
 - Repository instructions carry durable engineering standards.
 - Custom agents define a bounded mode of work.
@@ -236,7 +249,16 @@ Show the customization/context indicator.
 
 - Show the completed #3 PR.
 - Show saved generic-agent and custom-agent responses.
-- Open the instruction and agent files live.
+- Open the files on `demo/platform-customization`.
+
+## Reset after rehearsal
+
+Remove only the two generated customization files:
+
+```bash
+rm .github/copilot-instructions.md
+rm .github/agents/orders-api-maintainer.agent.md
+```
 
 ---
 
