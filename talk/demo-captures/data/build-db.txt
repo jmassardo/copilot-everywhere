@@ -1,0 +1,7 @@
+Built /Users/jenna/code/copilot-worktrees/copilot-everywhere/engineer-recording/sample-app/data/orders.db
+  customers      2,060
+  orders        50,000
+  line_items   125,362
+  refunds        2,806
+
+No indexes were created. That is deliberate.

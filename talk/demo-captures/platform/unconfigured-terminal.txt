@@ -1,0 +1,151 @@
+I’ll trace the application structure, existing endpoint conventions, and test patterns, then produce
+an evidence-backed implementation plan with unresolved decisions called out explicitly.
+
+/ Search (grep)
+  │ "refund|payment|charge|transaction|order"
+  └ 12 files found
+
+● Inspect repository status and files (shell)
+  │ git status --short && printf '\n--- root ---\n' && find . -maxdepth 2 -type f | sort | head -200
+  └ 26 lines…
+
+/ Search (glob)
+  │ "**/*"
+  └ 314 files found
+
+● Read main.py
+  │ app/main.py
+  └ 17 lines read
+
+● Read test_orders.py
+  │ tests/test_orders.py
+  └ 74 lines read
+
+● Read store.py
+  │ app/store.py
+  └ 87 lines read
+
+● Read orders.py
+  │ app/routers/orders.py
+  └ 82 lines read
+
+● Read customers.py
+  │ app/routers/customers.py
+  └ 57 lines read
+
+● Read models.py
+  │ app/models.py
+  └ 51 lines read
+
+● Read test_customers.py
+  │ tests/test_customers.py
+  └ 52 lines read
+
+● Read schema.sql
+  │ data/schema.sql
+  └ 49 lines read
+
+● Read README.md
+  └ 109 lines read
+
+● Read FEEDBACK.md
+  └ 68 lines read
+
+● Inspect dirty test diff and tracked files (shell)
+  │ git --no-pager diff -- tests/test_orders.py && printf '\n--- tracked files ---\n' && git
+  │ ls-files sample-app | sort
+  └ 18 lines…
+
+The core service uses in-memory storage rather than the analytics SQLite schema, and the repository
+deliberately contains conflicting error conventions. I’m narrowing the plan around the orders API
+convention while checking pricing, persistence boundaries, and whether authorization or idempotency
+has any existing precedent.
+
+● Read pricing.py
+  │ app/pricing.py
+  └ 55 lines read
+
+● Read README.md
+  │ data/README.md
+  └ 88 lines read
+
+● Read build_db.py
+  │ data/build_db.py
+  └ 175 lines read
+
+● Read pyproject.toml
+  └ 11 lines read
+
+/ Search (grep)
+  │ "def test_|client\.(post|get|delete)|response\.json|customer_id" in *.py (tests)
+  └ 47 lines found
+
+/ Search (grep)
+  │ "HTTPException|status_code|OrderStatus|total_cents|_orders|reset\(|refund|auth|Depends|Header|id
+  │ empoten" (app, tests, data, README.md, FEEDBACK.md)
+  └ 81 lines found
+
+/ Search (grep)
+  │ "class (LineItem|Order|OrderCreate|OrderTotals)|unit_price_cents|quantity:|status:|def
+  │ (get_order|save_order|delete_order|calculate_totals|create_order|get_order_totals)" in *.py
+  │ (app)
+  └ 16 lines found
+
+Refund endpoint plan
+
+ 1. Route
+  - Add POST /orders/{order_id}/refunds to app/routers/orders.py, keeping refunds as an order
+subresource rather than adding a router; all order operations already live under /orders
+(app/routers/orders.py:14-82).
+  - Return 201 with a typed refund response. Use HTTPException and structured {"code", "message"}
+details, matching order—not customer—error conventions (app/routers/orders.py:24-31,38-52;
+README.md:35).
+  - Missing order: 404 order_not_found. Invalid amount/state/over-refund: recommend 409 for
+business-state conflicts and 422 for schema validation, but exact codes are unresolved because no
+comparable operation exists.
+ 2. Models
+  - Add RefundCreate and Refund in app/models.py.
+  - Represent amounts as integer amount_cents, consistent with line items and totals
+(app/models.py:14,47-51), never the analytics replica’s REAL amounts, which are explicitly
+documented as disagreeing with the application (data/schema.sql:36-42; data/README.md:28).
+  - Suggested fields: refund id, order_id, amount_cents, optional reason, and created_at.
+  - Full versus partial: feedback explicitly requests partial refunds (FEEDBACK.md:36), but
+full-refund request semantics are unresolved. Proposed contract: omitted amount_cents means refund
+all remaining value; a supplied positive value means partial refund.
+  - Avoid adding "refunded" to OrderStatus: multiple partial refunds require aggregate state, while
+existing statuses only describe order fulfillment (app/models.py:7,35).
+ 3. Storage and business rules
+  - Add _refunds, save_refund, list_refunds_for_order, and idempotency lookup support to
+app/store.py; clear refunds and keys in reset(), following _orders and the test-isolation lifecycle
+(app/store.py:13-19,67-84).
+  - Compute maximum refundable as pricing.calculate_totals(...).total_cents - sum(previous refunds),
+ensuring discounts, customer tier, and tax match /totals (app/routers/orders.py:63-73;
+app/pricing.py:38-55). This invariant is recommended but not specified by repository evidence.
+  - Validate 0 < amount <= remaining; perform check-and-save as one store operation to avoid
+concurrent over-refunds.
+  - Eligible states are unresolved. The app creates only pending orders and exposes no status
+transition (app/routers/orders.py:35-60); the analytics fixture associates refunds with cancelled
+orders (data/build_db.py:143-148) but is explicitly only a disagreeing replica. Product must decide
+among paid, shipped, and cancelled states.
+  - Idempotency is unresolved. Recommended: require Idempotency-Key, persist key→request
+fingerprint/refund, replay identical requests, and reject key reuse with different content. No
+repository precedent exists.
+  - Define whether deleting an order cascades/refuses when refunds exist; current deletion is
+unconditional (app/store.py:83-84). Unresolved.
+ 4. Tests
+  - Extend tests/test_orders.py, reusing its autouse store reset and TestClient fixtures
+(tests/test_orders.py:8-18).
+  - Cover creation/response shape, missing order, each eligible/ineligible status, full refund,
+successive partial refunds, exact remaining amount, zero/negative/excess amounts, tier-adjusted
+totals, repeated idempotency key, conflicting key reuse, and reset isolation.
+  - Authorization is unresolved: there is no authentication dependency, header handling, or
+ownership enforcement anywhere in app/. Do not imply protection; define actor/role and
+order-ownership policy before implementation, then add unauthorized (401) and forbidden (403) tests.
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/demo-captures/platform/unconfigured-session.md
+
+
+Changes    +0 -0
+AI Credits 25.13 (44s)
+Tokens     ↑ 103.3k (68.8k cached, 34.5k written) • ↓ 2.6k (625 reasoning)
+Resume     copilot --resume=461ef31b-85d8-4af1-8411-039305242fdd

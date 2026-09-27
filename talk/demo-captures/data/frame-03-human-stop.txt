@@ -1,0 +1,14 @@
+$ sqlite3 data/orders.db \
+  "SELECT COUNT(*) FROM orders WHERE discount_rate IS NULL;"
+7113
+
+$ copilot -p \
+  "Which NULL rows mean no discount and which mean not recorded?"
+
+The data cannot determine that.
+
+Issue #8:
+status:blocked
+needs-human
+
+When evidence cannot establish meaning, stop and involve the data owner.

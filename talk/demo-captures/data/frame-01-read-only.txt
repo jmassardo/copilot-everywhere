@@ -1,0 +1,15 @@
+$ .venv/bin/python data/build_db.py
+customers      2,060
+orders        50,000
+line_items   125,362
+refunds        2,806
+
+$ sqlite3 -readonly data/orders.db
+sqlite> PRAGMA query_only = ON;
+sqlite> PRAGMA query_only;
+1
+
+sqlite> CREATE INDEX should_not_be_created ON orders(customer_id);
+Runtime error: attempt to write a readonly database
+
+The failed write proves the investigation boundary is active.

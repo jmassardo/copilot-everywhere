@@ -1,0 +1,14 @@
+$ sqlite3 data/orders.db "EXPLAIN QUERY PLAN ..."
+SEARCH o USING AUTOMATIC COVERING INDEX (customer_id=?)
+
+$ sqlite3 data/orders.db \
+  "CREATE INDEX idx_orders_customer_id ON orders(customer_id);"
+Index created.
+
+$ sqlite3 data/orders.db "EXPLAIN QUERY PLAN ..."
+SEARCH o USING INDEX idx_orders_customer_id (customer_id=?)
+
+Control totals before: 2060 | 50000 | 125362 | 2806
+Control totals after:  2060 | 50000 | 125362 | 2806
+
+One measured problem, one targeted index, unchanged reconciliation.

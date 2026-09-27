@@ -1,0 +1,115 @@
+I’ll inspect the focused route, storage implementation, and test, then run only the requested test
+and reproduction.
+
+/ Search (glob)
+  │ "{pyproject.toml,requirements*.txt,README*,Makefile}"
+  └ 4 files found
+
+/ Search (glob)
+  │ "**/*orders*.py"
+  └ 2 files found
+
+/ Search (grep)
+  │ "test_list_orders_filters_by_customer|customer_id|GET /orders" in **/*.py
+  └ 6 files found
+
+● Read orders.py
+  │ app/routers/orders.py
+  └ 82 lines read
+
+● Read store.py
+  │ app/store.py
+  └ 87 lines read
+
+● Read test_orders.py
+  │ tests/test_orders.py
+  └ 72 lines read
+
+● Read pyproject.toml
+  └ 11 lines read
+
+/ Search (glob)
+  │ "app/{main,app}.py"
+  └ 1 file found
+
+/ Search (glob)
+  │ "tests/{conftest.py,test_*.py}"
+  └ 2 files found
+
+The route passes the query parameter unchanged to storage; I’m now verifying the focused assertion
+and capturing the filtered response for cust-001.
+
+● Reproduce customer order filtering (shell)
+  │ python - <<'PY'
+  │ from fastapi.testclient import TestClient
+  │ from app import store
+  │ from app.main import app…
+  └ 14 lines…
+
+● Run focused order filter test (shell)
+  │ python -m pytest -q tests/test_orders.py::test_list_orders_filters_by_customer
+  └ 2 lines…
+
+python is unavailable in this environment; I’m rerunning the same two checks with the installed
+python3 interpreter.
+
+● Reproduce customer order filtering (shell)
+  │ python3 - <<'PY'
+  │ from fastapi.testclient import TestClient
+  │ from app import store
+  │ from app.main import app…
+  └ 16 lines…
+
+● Run focused order filter test (shell)
+  │ python3 -m pytest -q tests/test_orders.py::test_list_orders_filters_by_customer
+  └ 18 lines…
+
+The system interpreter lacks project dependencies, so I’m locating the repository’s existing virtual
+environment or configured test runner before restoring anything.
+
+● Read README.md
+  └ 109 lines read
+
+● Read requirements.txt
+  └ 9 lines read
+
+● Locate project Python environment (shell)
+  │ ls -la && find .. -maxdepth 3 -type f \( -path '*/bin/python' -o -path '*/bin/pytest' \) -print
+  └ 14 lines…
+
+● Reproduce customer order filtering (shell)
+  │ .venv/bin/python - <<'PY'
+  │ from fastapi.testclient import TestClient
+  │ from app import store
+  │ from app.main import app…
+  └ 19 lines…
+
+● Run focused order filter test (shell)
+  │ .venv/bin/python -m pytest -q tests/test_orders.py::test_list_orders_filters_by_customer
+  └ 26 lines…
+
+INCIDENT-4552 confirmed: GET /orders?customer_id=cust-001 incorrectly returned the order belonging
+to cust-002.
+
+ - Trace: The FastAPI route accepts customer_id and passes it unchanged to
+store.list_orders(customer_id) (]8;id=md-14dio74;app/routers/orders.py#L16-L18app/routers/orders.py:16-18]8;;]8;;).]8;;
+ - Faulty predicate: Storage filters with o.customer_id != customer_id (]8;id=md-1iw0dtp;app/store.py#L60-L64app/store.py:60-64]8;;]8;;). This ]8;;
+explicitly excludes the requested customer and returns every other customer’s orders. The predicate
+must use equality to implement customer filtering.
+ - Reproduction: After creating one order for each customer, GET /orders?customer_id=cust-001
+returned HTTP 200 with only the cust-002 order.
+ - Why the focused test stays green: The test creates exactly one order per customer, requests
+cust-002, and asserts only len(response) == 1 (]8;id=md-1ee9wnk;tests/test_orders.py#L57-L62tests/test_orders.py:57-62]8;;]8;;). Both correct and ]8;;
+inverted predicates produce one result: correct filtering returns the single cust-002 order; the
+faulty predicate returns the single cust-001 order. The test never asserts the returned order’s
+customer_id.
+
+The requested focused test passed: 1 passed. No files were changed.
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/engineer-demo/take2-incident-session.md
+
+
+Changes    +0 -0
+AI Credits 14.25 (34s)
+Tokens     ↑ 134.0k (121.9k cached) • ↓ 2.3k (286 reasoning)
+Resume     copilot --resume=61cf2da5-da48-4734-b907-afc0977938c8

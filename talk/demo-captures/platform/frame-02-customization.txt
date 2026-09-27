@@ -1,0 +1,14 @@
+$ cat .github/copilot-instructions.md
+
+- New API errors use FastAPI HTTPException and non-2xx status.
+- Structured errors contain stable code and message fields.
+- Application money uses integer cents.
+- New timestamps are timezone-aware UTC.
+- Do not invent refund, retention, authorization, or compatibility policy.
+- Run focused tests, full pytest, and Ruff before completion.
+
+$ head -12 .github/agents/orders-api-maintainer.agent.md
+name: Orders API Maintainer
+description: Safely maintain Orders Service endpoints within approved contracts
+
+Stop when an API contract or required product policy is missing.

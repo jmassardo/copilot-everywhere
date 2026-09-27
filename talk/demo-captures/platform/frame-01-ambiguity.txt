@@ -1,0 +1,16 @@
+$ copilot -p "Plan a refund endpoint using repository conventions"
+
+Repository evidence:
+- Orders errors: structured HTTPException with non-2xx status
+- Customer errors: plain dictionaries returned with HTTP 200
+- Application money: integer cents
+- Refund implementation: none
+
+Unresolved:
+- eligible order states
+- full versus partial refunds
+- maximum refundable amount
+- idempotency
+- authorization and retention
+
+The repository contains conflicting precedent and missing product policy.

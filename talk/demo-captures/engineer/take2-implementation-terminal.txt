@@ -1,0 +1,81 @@
+I’ll inspect the targeted test and implementation, strengthen only the regression assertion, and
+capture the required red run before touching production code.
+
+● Read test_orders.py
+  │ tests/test_orders.py
+  └ 72 lines read
+
+/ Search (grep)
+  │ "def list_orders" in *.py
+  └ 53 lines found
+
+● Check repository working tree (shell)
+  │ git --no-pager status --short
+  └ 2 lines…
+
+app/store.py is already modified in the worktree, so I’m checking the existing diff before editing
+to avoid overwriting unrelated work; the test file is clean.
+
+● Read pyproject.toml
+  └ 11 lines read
+
+● Inspect targeted file changes (shell)
+  │ git --no-pager diff -- app/store.py tests/test_orders.py
+  └ 12 lines…
+
+/ Search (glob)
+  │ "*"
+  └ 312 files found
+
+● Edit
+  └ Edit tests/test_orders.py
+
+● Run focused regression test (shell)
+  │ .venv/bin/pytest tests/test_orders.py::test_list_orders_filters_by_customer -q
+  └ 45 lines…
+
+The strengthened assertion is red exactly as intended: the single filtered result belongs to the
+wrong customer. I’ll now flip only that predicate, then run focused and broad validation.
+
+● Edit
+  └ Edit app/store.py
+
+● Rerun focused regression test (shell)
+  │ .venv/bin/pytest tests/test_orders.py::test_list_orders_filters_by_customer -q
+  └ 26 lines…
+
+● Run Ruff checks (shell)
+  │ .venv/bin/ruff check .
+  └ 2 lines…
+
+● Run full test suite (shell)
+  │ .venv/bin/pytest -q
+  └ 20 lines…
+
+The fix is green in the focused test, full suite, and Ruff. I’m doing a final diff check to confirm
+only the requested assertion and predicate changed.
+
+● Confirm changed files only (shell)
+  │ git --no-pager status --short
+  └ 2 lines…
+
+● Verify final targeted diff (shell)
+  │ git --no-pager diff --check && git --no-pager diff -- app/store.py tests/test_orders.py
+  └ 16 lines…
+
+Implemented INCIDENT-4552 regression coverage and restored the correct predicate.
+
+ - Red: Focused test failed because the returned order belonged to cust-001, not requested cust-002.
+ - Green: Focused test passed; full suite passed 13 tests; Ruff passed.
+ - Changed lines: tests/test_orders.py:66-68 now verifies every filtered order’s customer_id;
+app/store.py:74 changed != to ==.
+ - Final diff contains only the regression test because the production fix restores app/store.py to
+its committed state.
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/engineer-demo/take2-implementation-session.md
+
+
+Changes    +4 -2
+AI Credits 24.59 (42s)
+Tokens     ↑ 218.8k (190.9k cached, 27.8k written) • ↓ 1.5k (367 reasoning)
+Resume     copilot --resume=abc08361-40f9-4fcc-80c3-8c7c45b233ac

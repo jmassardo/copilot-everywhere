@@ -1,0 +1,132 @@
+I’ll establish the application and declared analytics semantics first, then validate the replica
+through a single read-only SQLite connection with query-only mode enabled.
+
+● Read schema.sql
+  │ data/schema.sql
+  └ 49 lines read
+
+● Read models.py
+  │ app/models.py
+  └ 51 lines read
+
+● Read pricing.py
+  │ app/pricing.py
+  └ 55 lines read
+
+● Verify query-only mode and inspect schema (shell)
+  │ sqlite3 -readonly -header -column data/orders.db "PRAGMA query_only = ON; PRAGMA query_only;
+  │ SELECT type, name, tbl_name, sql FROM sqlite_master WHERE type IN
+  │ ('table','index','view','trigger') ORDER BY type, name;"
+  └ 47 lines…
+
+The declared and live schemas match, but both omit the application’s constraints. I’ll now quantify
+domain, ownership, monetary, discount, and pricing-reconciliation gaps, including the query plan
+impact of missing ownership indexes.
+
+● Validate replica application semantics (shell)
+  │ sqlite3 -readonly -header -column data/orders.db "PRAGMA query_only = ON; PRAGMA query_only;
+  │ SELECT 'customers' AS entity, COUNT(*) AS rows FROM customers UNION ALL SELECT 'orders',
+  │ COUNT(*) FROM orders UNION ALL SELECT 'line_items', COUNT(*) FROM line_items UNION ALL SELECT
+  │ 'refunds', COUNT(*) FROM refunds; SELECT status, COUNT(*) AS orders FROM orders GROUP BY
+  │ status ORDER BY status; SELECT tier, COUNT(*) AS customers FROM customers GROUP BY tier ORDER …
+  └ 123 lines…
+
+The pricing mismatch is concentrated enough to distinguish semantic drift from storage precision.
+I’ll segment it by customer tier, verify strict discount-threshold boundaries, and summarize
+application-valid versus invalid statuses before reporting.
+
+● Segment semantic validation results (shell)
+  │ sqlite3 -readonly -header -column data/orders.db "PRAGMA query_only = ON; PRAGMA query_only;
+  │ SELECT SUM(status IN ('pending','paid','shipped','cancelled')) AS app_valid_status_rows,
+  │ SUM(status NOT IN ('pending','paid','shipped','cancelled') OR status IS NULL) AS
+  │ app_invalid_status_rows, SUM(status IS NULL) AS null_status_rows FROM orders; WITH subtotals
+  │ AS (SELECT o.id, o.customer_id, o.total_amount, …
+  └ 66 lines…
+
+┌──────────────┬────────────────────┬─────────────────────────────┬────────────────────────────┐
+│ Area         │ Application        │ Replica evidence /          │ Assessment / limitation    │
+│              │ semantics          │ validation result           │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Read-only    │ N/A                │ PRAGMA query_only = ON;     │ Replica was investigated   │
+│ verification │                    │ PRAGMA query_only returned  │ read-only; query_only is   │
+│              │                    │ 1 in every SQLite           │ connection-local and does  │
+│              │                    │ connection. Only SELECT,    │ not prevent unrelated      │
+│              │                    │ PRAGMA, and EXPLAIN QUERY   │ external writers.          │
+│              │                    │ PLAN were executed.         │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Schema       │ Pydantic requires  │ Live schema matches         │ Analytics schema does not  │
+│ constraints  │ valid              │ data/schema.sql: all non-PK │ enforce application        │
+│              │ tiers/statuses,    │ columns report notnull=0;   │ invariants.                │
+│              │ positive           │ no foreign keys or status   │                            │
+│              │ quantities, and    │ checks; only PK indexes     │                            │
+│              │ nonnegative        │ exist.                      │                            │
+│              │ integer-cent       │                             │                            │
+│              │ prices             │                             │                            │
+│              │ (app/models.py).   │                             │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Money        │ Application uses   │ Current data had zero null, │ Current values are clean,  │
+│              │ integer cents and  │ negative, or                │ but float storage and      │
+│              │ truncates          │ greater-than-two-decimal    │ absent constraints permit  │
+│              │ calculated         │ values across 50,000 order  │ future drift. Repricing    │
+│              │ discount, tax, and │ totals, 125,362 unit        │ assumes analytics amounts  │
+│              │ totals             │ prices, and 2,806 refunds;  │ are dollars and converts   │
+│              │ (app/models.py,    │ quantities had zero         │ them using                 │
+│              │ app/pricing.py);   │ null/nonpositive values.    │ ROUND(value*100).          │
+│              │ analytics stores   │                             │                            │
+│              │ REAL.              │                             │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Pricing      │ Total applies      │ Recalculation matched       │ Strong evidence that       │
+│ totals       │ strict volume      │ 8,856/50,000 orders; 41,144 │ stored totals omit or      │
+│              │ thresholds,        │ differed. Enterprise:       │ differ from tier pricing;  │
+│              │ customer-tier      │ 17,467/17,467 mismatched,   │ standard one-cent          │
+│              │ multiplier, 8.75%  │ max +16,639¢. Premium:      │ differences are consistent │
+│              │ tax, then int()    │ 16,256/16,256 mismatched,   │ with                       │
+│              │ truncation.        │ max +9,002¢. Standard       │ rounding-versus-truncation │
+│              │                    │ mismatches were at most     │ drift. Orphan orders were  │
+│              │                    │ +1¢.                        │ priced with the            │
+│              │                    │                             │ application’s default 1.0  │
+│              │                    │                             │ multiplier.                │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Discounts    │ Rates are 0, 0.05, │ 7,113 rates are NULL; 5,923 │ NULL conflates “no         │
+│              │ 0.10, or 0.15;     │ occur where application     │ discount” with missing     │
+│              │ thresholds use     │ rate is zero and 1,190      │ discount, including 1,190  │
+│              │ strict >           │ where it should be          │ materially discounted      │
+│              │ comparisons.       │ positive. Every non-null    │ orders.                    │
+│              │                    │ rate matched the            │                            │
+│              │                    │ application calculation.    │                            │
+│              │                    │ Exact-boundary data agrees  │                            │
+│              │                    │ with strict semantics:      │                            │
+│              │                    │ 10,000¢→0/NULL, 20,000¢→5%, │                            │
+│              │                    │ 50,000¢→10%.                │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Status       │ Allowed values:    │ 28,685 valid rows; 21,315   │ Case variation breaks the  │
+│              │ pending, paid,     │ invalid rows: PAID 7,110,   │ application’s literal      │
+│              │ shipped,           │ Paid 7,056, and SHIPPED     │ status domain.             │
+│              │ cancelled.         │ 7,149. No null statuses.    │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Ownership    │ Orders reference   │ 394 orders reference        │ Referential ownership is   │
+│              │ customers;         │ missing customers.          │ unenforced and customer    │
+│              │ application orders │ Line-item and refund orphan │ ownership is already       │
+│              │ embed owned line   │ counts were both zero.      │ violated; refund semantics │
+│              │ items.             │ Query plans use             │ cannot be compared because │
+│              │                    │ customer/order PK lookups   │ refunds are absent from    │
+│              │                    │ but SCAN o and SCAN li      │ the scoped application     │
+│              │                    │ because ownership columns   │ models.                    │
+│              │                    │ lack indexes.               │                            │
+├──────────────┼────────────────────┼─────────────────────────────┼────────────────────────────┤
+│ Scope        │ Requested files    │ Examined data/orders.db,    │ Results describe the       │
+│              │ only.              │ data/schema.sql,            │ current snapshot only; no  │
+│              │                    │ app/models.py, and          │ application persistence    │
+│              │                    │ app/pricing.py; did not use │ code was in scope to       │
+│              │                    │ data/README.md or network   │ establish intended         │
+│              │                    │ services.                   │ serialization beyond these │
+│              │                    │                             │ models and pricing rules.  │
+└──────────────┴────────────────────┴─────────────────────────────┴────────────────────────────┘
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/demo-captures/data/investigation-session.md
+
+
+Changes    +0 -0
+AI Credits 23.22 (53s)
+Tokens     ↑ 77.5k (55.0k cached, 22.5k written) • ↓ 4.9k (1.8k reasoning)
+Resume     copilot --resume=0bc09147-8cc3-4e56-ad5c-256ff1df6f5b

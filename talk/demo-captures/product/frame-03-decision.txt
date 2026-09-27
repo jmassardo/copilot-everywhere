@@ -1,0 +1,17 @@
+$ gh issue view 6
+Decide the Orders Service refund contract
+
+Labels:
+status:blocked
+needs-human
+persona:product
+
+Copilot can identify the unanswered questions.
+Product still owns:
+- eligible states
+- partial versus full refunds
+- maximum amount
+- idempotency
+- authorization
+
+Delegating an unresolved decision only hides the assumption.

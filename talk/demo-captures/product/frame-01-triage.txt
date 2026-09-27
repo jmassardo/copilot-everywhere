@@ -1,0 +1,16 @@
+$ copilot -p "Group FEEDBACK.md into evidence-backed themes"
+
+Objective defects:
+- exact discount thresholds use strict comparison
+- naive UTC timestamps omit timezone information
+- pricing has no focused tests
+
+Product decisions:
+- refund eligibility, limits, and behavior
+- customer deletion retention or cascade policy
+
+Contract decisions:
+- whether existing HTTP 200 error behavior may change
+
+Discovery:
+- reconcile customer reports with the deployed version and data.

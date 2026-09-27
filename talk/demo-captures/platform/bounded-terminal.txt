@@ -1,0 +1,86 @@
+I’ll trace the existing API contract, models, storage, and tests first; I will only edit if all
+required refund policies are defined.
+
+● update_todo todos: "- [in progress] Inspect repository refund and API contract e…"
+  └ TODO list updated
+
+/ Search (grep)
+  │ "FastAPI|APIRouter|HTTPException|Order|orders" in *.{py,md,toml,yaml,yml,json}
+  └ 41 files found
+
+/ Search (grep)
+  │ "refund|refundable|partial refund|full
+  │ refund|idempoten|authorization|authorize|retention|compatib"
+  └ 149 lines found
+
+/ Search (glob)
+  │ "**/*"
+  └ 287 files found
+
+The initial search indicates the repository intentionally leaves the refund contract unresolved. I’m
+confirming each required policy dimension against the application and its contract documentation
+before applying the mandated stop.
+
+● Read store.py
+  │ sample-app/app/store.py
+  └ L1:300 (87 lines read)
+
+● Read README.md
+  │ sample-app/README.md
+  └ L1:100 (99 lines read)
+
+● Read FEEDBACK.md
+  │ sample-app/FEEDBACK.md
+  └ L1:80 (68 lines read)
+
+● Read orders.py
+  │ sample-app/app/routers/orders.py
+  └ L1:240 (82 lines read)
+
+● Read models.py
+  │ sample-app/app/models.py
+  └ L1:260 (51 lines read)
+
+● Read schema.sql
+  │ sample-app/data/schema.sql
+  └ L1:100 (49 lines read)
+
+● Read test_orders.py
+  │ sample-app/tests/test_orders.py
+  └ L1:300 (74 lines read)
+
+● Read platform.md
+  │ lab/tracks/platform.md
+  └ L108:230 (123 lines read)
+
+The required policy is absent by design, so the stop condition applies. I’m recording implementation
+and validation as blocked rather than inventing contract behavior.
+
+● update_todo todos: "- [completed] Inspect repository refund and API contract evi…"
+  └ TODO list updated
+
+Blocked—no files changed. The repository intentionally defines no approved refund contract
+(lab/tracks/platform.md:115-192).
+
+Missing decisions:
+
+ - Refund eligibility and eligible order states
+ - Full versus partial refunds
+ - Maximum and cumulative refundable amount
+ - Idempotency behavior
+ - Authorization requirements
+ - Audit/retention rules
+ - API compatibility expectations
+
+Existing evidence only establishes integer-cent application money and structured HTTPException
+errors for new Orders APIs. The analytics refunds table and prospect feedback do not define product
+policy. Per the repository stop conditions, implementation and tests must wait for an approved
+contract covering the items above.
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/demo-captures/platform/bounded-session.md
+
+
+Changes    +0 -0
+AI Credits 20.99 (23s)
+Tokens     ↑ 105.7k (74.2k cached, 31.5k written) • ↓ 1.1k (141 reasoning)
+Resume     copilot --resume=50ce8991-5c2f-4d2f-b2cf-11a21e42186d

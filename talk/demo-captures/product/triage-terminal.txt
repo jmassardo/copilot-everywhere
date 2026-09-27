@@ -1,0 +1,227 @@
+I’ll map each feedback entry to the smallest relevant implementation surface, then separate verified
+defects from decisions and open discovery without changing the worktree.
+
+● Read FEEDBACK.md
+  │ sample-app/FEEDBACK.md
+  └ 68 lines read
+
+/ Search (glob)
+  │ "sample-app/**"
+  └ 312 files found
+
+● Read README.md
+  │ sample-app/README.md
+  └ 109 lines read
+
+● Read schema.sql
+  │ sample-app/data/schema.sql
+  └ 49 lines read
+
+/ Search (glob)
+  │ "*.py" in sample-app
+  └ 11 files found
+
+/ Search (glob)
+  │ "app/**/*.py" in sample-app
+  └ No matches found
+
+/ Search (glob)
+  │ "tests/**/*.py" in sample-app
+  └ No matches found
+
+The queue spans pricing, HTTP semantics, timestamps, reconciliation, refunds, lifecycle integrity,
+and customer isolation; I’m now checking only those implementations and their existing tests to
+distinguish evidence from assumptions.
+
+● Read pricing.py
+  │ sample-app/app/pricing.py
+  └ 55 lines read
+
+● Read models.py
+  │ sample-app/app/models.py
+  └ 51 lines read
+
+● Read store.py
+  │ sample-app/app/store.py
+  └ 87 lines read
+
+● Read orders.py
+  │ sample-app/app/routers/orders.py
+  └ 82 lines read
+
+● Read customers.py
+  │ sample-app/app/routers/customers.py
+  └ 57 lines read
+
+● Read test_orders.py
+  │ sample-app/tests/test_orders.py
+  └ 74 lines read
+
+● Read test_customers.py
+  │ sample-app/tests/test_customers.py
+  └ 52 lines read
+
+/ Search (grep)
+  │ "datetime\.utcnow|def delete_customer|def list_orders|o\.customer_id|return
+  │ \{"error"|status_code" in {app/store.py,app/routers/*.py,tests/*.py} (sample-app)
+  └ No matches found
+
+/ Search (grep)
+  │ "if subtotal > threshold|discount_cents=int|tax_cents=int|total_cents=int|discounted =
+  │ discounted \*|class OrderTotals" in {app/pricing.py,app/models.py} (sample-app)
+  └ No matches found
+
+/ Search (grep)
+  │ "refund|include_router|orders|customers" in {app/main.py,app/**/*.py,data/schema.sql}
+  │ (sample-app)
+  └ No matches found
+
+/ Search (grep)
+  │ "test_pricing|pricing" in *.py (sample-app/tests)
+  └ No matches found
+
+● Check relevant worktree changes (shell)
+  │ git --no-pager status --short -- sample-app && git --no-pager diff -- sample-app/app/store.py
+  │ sample-app/tests/test_orders.py
+  └ 17 lines…
+
+One important discrepancy emerged: the incident regression test has been strengthened in the
+worktree, while the implementation currently uses the correct equality filter. I’m resolving
+current-code versus feedback status and collecting precise line references before classifying that
+incident.
+
+/ Search (grep)
+  │ "CREATE TABLE refunds|no foreign keys|customer_id|discount_rate" (sample-app/data/schema.sql)
+  └ 5 lines found
+
+/ Search (grep)
+  │ "refund|include_router" in *.py (sample-app)
+  └ 7 lines found
+
+/ Search (grep)
+  │ "test_list_orders_filters|filtered_orders|test_pricing|pricing" in *.py (sample-app/tests)
+  └ 4 lines found
+
+/ Search (grep)
+  │ "if subtotal > threshold|discount_cents=int|tax_cents=int|total_cents=int|discounted =
+  │ discounted \*|class OrderTotals" in *.py (sample-app/app)
+  └ 6 lines found
+
+/ Search (grep)
+  │ "datetime\.utcnow|def delete_customer|def list_orders|o\.customer_id|return
+  │ \{"error"|status_code" in *.py (sample-app/app)
+  └ 27 lines found
+
+● Check committed filter implementation (shell)
+  │ git --no-pager show HEAD:sample-app/app/store.py | grep -n "o.customer_id" && git --no-pager log
+  │ -1 --format='%h %s' -- sample-app/app/store.py
+  └ 3 lines…
+
+● Probe reported behaviors (shell)
+  │ cd sample-app && .venv/bin/python - <<'PY'
+  │ from fastapi.testclient import TestClient
+  │ from app import store
+  │ from app.main import app
+  │ from app.models import LineItem…
+  └ 50 lines…
+
+Customer problems
+
+┌───────────────────┬────────────────┬─────────────────────────────────────────────────────────┐
+│ Theme / feedback  │ Classification │ Repository verification                                 │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Invoice differs   │ Objective      │ Monetary calculations use floats and truncate with      │
+│ by a penny —      │ defect         │ int() in app/pricing.py:40-54. A 101-cent subtotal      │
+│ TICKET-4471       │                │ produces 8 cents tax rather than the conventionally     │
+│                   │                │ rounded 9. Signal: fixture from the customer PO         │
+│                   │                │ reproduces expected subtotal, discount, tax, and total  │
+│                   │                │ using the agreed rounding rule.                         │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Exactly $100      │ Objective      │ app/pricing.py:33 uses subtotal > threshold; the $100   │
+│ receives no       │ defect         │ threshold is 10,000 cents at app/pricing.py:13-17.      │
+│ advertised 5%     │                │ Runtime result: discount_rate_for(10_000) == 0.0.       │
+│ discount —        │                │ Signal: boundary tests at 9,999/10,000/10,001 cents,    │
+│ TICKET-4488       │                │ with 10,000 returning 0.05.                             │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Failures return   │ Contract       │ Customer errors are ordinary dictionaries at            │
+│ HTTP 200,         │ decision       │ app/routers/customers.py:29,36,39,56;                   │
+│ breaking retries  │                │ tests/test_customers.py:27-31 explicitly expects 200.   │
+│ and undermining   │                │ Orders instead use 4xx responses at                     │
+│ reliability —     │                │ app/routers/orders.py:24-31,37-53. Unanswered: should   │
+│ TICKET-4502 and   │                │ customer errors adopt the orders error                  │
+│ @dana-sales, 3    │                │ envelope/statuses immediately, or require               │
+│ weeks ago         │                │ versioning/deprecation for existing clients?            │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ UTC timestamps    │ Objective      │ datetime.utcnow() creates naive values in               │
+│ omit timezone     │ defect         │ app/store.py:29,38, app/routers/orders.py:56, and       │
+│ information —     │                │ app/routers/customers.py:47; observed JSON had no Z or  │
+│ TICKET-4515       │                │ offset. Signal: every API timestamp parses as           │
+│                   │                │ timezone-aware and ends in Z or +00:00.                 │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Tier discount     │ Contract       │ The tier multiplier is applied silently at              │
+│ cannot be         │ decision       │ app/pricing.py:44, while OrderTotals exposes only one   │
+│ reconciled        │                │ discount_rate/discount_cents field                      │
+│ separately —      │                │ (app/models.py:46-51). Unanswered: should totals expose │
+│ TICKET-4531       │                │ separate volume and customer-tier discounts, and in     │
+│                   │                │ what order should they apply?                           │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Deleting          │ Product        │ app/store.py:63-64 removes only the customer; orders    │
+│ customers leaves  │ decision       │ retain customer_id. Unanswered: should deletion be      │
+│ orphan orders —   │                │ rejected, cascade orders, anonymize them, or            │
+│ TICKET-4540       │                │ soft-delete the customer?                               │
+├───────────────────┼────────────────┼─────────────────────────────────────────────────────────┤
+│ Customer-filter   │ Discovery      │ The current code correctly uses equality                │
+│ data exposure —   │                │ (app/store.py:71-75), and the strengthened worktree     │
+│ INCIDENT-4552     │                │ test verifies ownership (tests/test_orders.py:61-68;    │
+│                   │                │ passed). This conflicts with the reproduced incident    │
+│                   │                │ and with README.md’s stale claim that the code uses !=. │
+│                   │                │ Next question: which deployed version, request          │
+│                   │                │ parameters, and data snapshot produced the exposure?    │
+└───────────────────┴────────────────┴─────────────────────────────────────────────────────────┘
+
+Technical risks
+
+┌────────────────┬────────────────┬────────────────────────────────────────────────────────────┐
+│ Theme /        │ Classification │ Repository verification                                    │
+│ feedback       │                │                                                            │
+├────────────────┼────────────────┼────────────────────────────────────────────────────────────┤
+│ Pricing has    │ Objective      │ No test under sample-app/tests/ references pricing or      │
+│ zero tests —   │ defect         │ totals. Signal: direct tests cover thresholds, rounding,   │
+│ @raj-eng, 2    │ (quality gap)  │ every tier, empty/large inputs, and totals reconciliation. │
+│ weeks ago      │                │                                                            │
+├────────────────┼────────────────┼────────────────────────────────────────────────────────────┤
+│ Deprecated     │ Objective      │ The four utcnow() call sites above emit Python 3.14        │
+│ datetime APIs  │ defect         │ deprecation warnings. Signal: targeted tests run with      │
+│ — @priya-eng,  │                │ deprecations treated as errors and produce none.           │
+│ 9 days ago     │                │                                                            │
+├────────────────┼────────────────┼────────────────────────────────────────────────────────────┤
+│ No referential │ Objective      │ data/schema.sql:18 defines orders.customer_id without a    │
+│ integrity —    │ defect         │ foreign key; the omission is explicit at                   │
+│ @raj-eng, 2    │ (data-model    │ data/schema.sql:45. Signal: orphan insertion/deletion is   │
+│ days ago       │ risk)          │ rejected under the selected lifecycle policy.              │
+└────────────────┴────────────────┴────────────────────────────────────────────────────────────┘
+
+Requested solutions
+
+┌────────────────┬────────────────┬────────────────────────────────────────────────────────────┐
+│ Theme /        │ Classification │ Repository verification                                    │
+│ feedback       │                │                                                            │
+├────────────────┼────────────────┼────────────────────────────────────────────────────────────┤
+│ Partial        │ Product        │ No refund model/router is registered; app/main.py:11-12    │
+│ refunds —      │ decision       │ includes only orders and customers. An analytics-only      │
+│ @dana-sales,   │                │ refunds table exists at data/schema.sql:36-42. Unanswered: │
+│ 11 days ago    │                │ are partial refunds merely recorded or                     │
+│ and 4 days ago │                │ payment-processor-backed, and what limits, statuses,       │
+│                │                │ idempotency, authorization, and order-total effects are    │
+│                │                │ required?                                                  │
+└────────────────┴────────────────┴────────────────────────────────────────────────────────────┘
+
+No files were edited.
+
+Session exported to: /Users/jenna/.copilot/session-state/73b2569e-492f-4081-9eb3-de493753ac07/files/demo-captures/product/triage-session.md
+
+
+Changes    +0 -0
+AI Credits 26.66 (1m 6s)
+Tokens     ↑ 191.3k (164.9k cached) • ↓ 4.8k (1.8k reasoning)
+Resume     copilot --resume=4729203e-672e-4676-a132-f20136966e14

@@ -1,0 +1,16 @@
+INCIDENT-4552 confirmed
+
+- GET /orders passes customer_id unchanged to store.list_orders.
+- store.list_orders filters with:
+
+    o.customer_id != customer_id
+
+- That predicate excludes the requested customer's orders and returns other customers' orders.
+- The existing test creates one order for each of two customers and checks only:
+
+    len(response.json()) == 1
+
+Both == and != return one result in that symmetric fixture.
+
+Missing invariant:
+Every returned order must have customer_id == requested_customer_id.

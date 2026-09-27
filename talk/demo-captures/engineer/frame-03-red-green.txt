@@ -1,0 +1,18 @@
+$ pytest tests/test_orders.py::test_list_orders_filters_by_customer -q
+FAILED
+AssertionError: returned order belongs to cust-001, not requested cust-002
+
+Copilot changes:
+- Strengthen the test to assert every returned order belongs to cust-002.
+- Change store.list_orders predicate from != to ==.
+
+$ pytest tests/test_orders.py::test_list_orders_filters_by_customer -q
+1 passed
+
+$ pytest -q
+13 passed
+
+$ ruff check .
+All checks passed!
+
+Smallest safe fix, backed by an ownership regression test.

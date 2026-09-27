@@ -1,0 +1,14 @@
+$ .venv/bin/python -m pytest -q
+.............                                                    [100%]
+13 passed in 0.15s
+
+$ .venv/bin/ruff check .
+All checks passed!
+
+$ .venv/bin/python reproduce_incident.py
+[('ord-f11dc460', 'cust-002')]
+
+Requested customer: cust-001
+Returned customer:  cust-002
+
+Green CI did not verify the customer-ownership invariant.

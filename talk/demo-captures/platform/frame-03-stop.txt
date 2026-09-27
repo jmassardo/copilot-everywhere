@@ -1,0 +1,15 @@
+$ copilot --agent orders-api-maintainer \
+  -p "Add a refund endpoint following this repository's conventions."
+
+Blocked - no files changed.
+
+Missing decisions:
+- refund eligibility and eligible order states
+- full versus partial refunds
+- maximum and cumulative refundable amount
+- idempotency behavior
+- authorization requirements
+- audit and retention rules
+- API compatibility expectations
+
+A safe agent asks for policy instead of inventing it.

@@ -1,0 +1,21 @@
+$ sqlite3 data/orders.db "EXPLAIN QUERY PLAN ..."
+QUERY PLAN
+|--SCAN c USING INDEX sqlite_autoindex_customers_1
+`--SEARCH o USING AUTOMATIC COVERING INDEX (customer_id=?) LEFT-JOIN
+
+$ sqlite3 data/orders.db "SELECT reconciliation totals ..."
+2060|50000|125362|2806
+
+$ sqlite3 data/orders.db "CREATE INDEX idx_orders_customer_id ..."
+Index created.
+
+$ sqlite3 data/orders.db "EXPLAIN QUERY PLAN ..."
+QUERY PLAN
+|--SCAN c USING INDEX sqlite_autoindex_customers_1
+`--SEARCH o USING INDEX idx_orders_customer_id (customer_id=?) LEFT-JOIN
+
+$ sqlite3 data/orders.db "SELECT reconciliation totals ..."
+2060|50000|125362|2806
+
+$ sqlite3 data/orders.db "SELECT COUNT(*) FROM orders WHERE discount_rate IS NULL;"
+7113
