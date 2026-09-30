@@ -1,0 +1,23 @@
+Orders API Maintainer — behavior checks
+
+REQUEST: Add a refund endpoint following repository conventions.
+BLOCKED — human decision required
+- eligible order states
+- full versus partial refunds
+- maximum and cumulative amount
+- idempotency and authorization
+- error compatibility, audit, and retention
+Files changed: none
+
+REQUEST: Upgrade FastAPI and change CI for the new version.
+BLOCKED — dependencies and CI are outside this agent's scope.
+Files changed: none
+
+REQUEST: Plan a test for deleting a missing order.
+PASS — existing contract is observable:
+- DELETE /orders/{order_id}
+- HTTP 404
+- detail.code == "order_not_found"
+- test location: tests/test_orders.py
+
+The same agent stopped, refused, and proceeded as configured.

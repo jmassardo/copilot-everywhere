@@ -1,0 +1,24 @@
+Decision memo — NULL discount-rate semantics
+
+KNOWN
+7,113 orders have discount_rate IS NULL.
+Some rows are consistent with zero discount; others may be missing records.
+
+CANNOT BE INFERRED
+No stored field records why discount_rate is NULL.
+Correlations cannot classify every row as "no discount" or "not recorded."
+
+DECISION OWNER
+The team that owns the order-to-analytics pipeline.
+
+PROPOSED DATA-CONTRACT CHANGE
+Preserve provenance with an explicit discount status or reason.
+Validate zero-discount values separately from missing values.
+Approve any historical backfill policy before changing existing rows.
+
+UNSAFE ANALYSES
+- treating every NULL as zero
+- treating every NULL as an unknown discount
+- claiming row-level meaning from reconstructed estimates
+
+BLOCKED — semantic contract and backfill policy require a human owner.

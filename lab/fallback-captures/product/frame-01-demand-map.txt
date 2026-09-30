@@ -1,0 +1,21 @@
+Evidence-grounded demand map
+
+Theme                     Evidence type         Classification
+Customer isolation        support + code        objective incident
+Discount boundaries       feedback + pricing   objective defect
+Penny reconciliation      customer report       separate investigation
+Refund capability         repeated demand       product decision
+Customer error behavior   conflicting routes    contract decision
+Customer deletion         code gap              retention decision
+Naive UTC timestamps      repository fact       bounded maintenance
+NULL discount meaning     analytics evidence    discovery / data owner
+
+Citation checks:
+PASS pricing.py uses exclusive threshold comparisons.
+PASS orders.py and customers.py use different error conventions.
+PASS store.py defines no order policy for customer deletion.
+
+Human context:
+Cross-customer exposure receives highest urgency regardless of report count.
+
+No priority was inferred from unsupported revenue or customer-count claims.

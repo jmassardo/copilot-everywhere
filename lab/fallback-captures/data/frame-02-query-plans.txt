@@ -1,0 +1,24 @@
+Enterprise lifetime-value query — unchanged SQL
+
+BEFORE
+QUERY PLAN
+|--SCAN c
+`--SEARCH o USING AUTOMATIC COVERING INDEX (customer_id=?) LEFT-JOIN
+second run: 0.021 s
+
+APPROVED WRITE
+CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+
+AFTER
+QUERY PLAN
+|--SCAN c
+`--SEARCH o USING INDEX idx_orders_customer_id (customer_id=?) LEFT-JOIN
+second run: 0.008 s
+
+Reconciliation before:
+2060 | 50000 | 125362 | 2806 | 394 | 7 | 7113 | 14183118.39
+Reconciliation after:
+2060 | 50000 | 125362 | 2806 | 394 | 7 | 7113 | 14183118.39
+
+PASS — named index replaced automatic index.
+PASS — unchanged query and unchanged controls.

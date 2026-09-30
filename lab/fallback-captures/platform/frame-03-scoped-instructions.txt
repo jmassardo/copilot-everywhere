@@ -1,0 +1,24 @@
+Path-scoped instruction verification
+
+TASK 1
+Target: sample-app/tests/test_orders.py
+Active context:
+  .github/copilot-instructions.md
+  .github/instructions/tests.instructions.md
+
+Proposed focused test:
+PASS reuses existing client fixture
+PASS asserts HTTP 404
+PASS asserts detail.code == "order_not_found"
+PASS one observable behavior
+
+$ .venv/bin/python -m pytest -q tests/test_orders.py
+.........                                                       [100%]
+9 passed in 0.31s
+
+TASK 2
+Target: sample-app/README.md
+Active context:
+  .github/copilot-instructions.md
+
+PASS — tests.instructions.md is not active for README-only work.

@@ -1,0 +1,19 @@
+$ .venv/bin/python -m pytest -q
+.............                                                    [100%]
+13 passed in 0.42s
+
+$ .venv/bin/python /tmp/reproduce_incident_4552.py
+GET /orders?customer_id=cust-001
+status: 200
+returned:
+  order_id: ord-cust-002
+  customer_id: cust-002
+  total_cents: 4500
+
+INCIDENT CONFIRMED
+Requested customer: cust-001
+Returned customer:  cust-002
+Existing suite:      green
+
+Missing invariant:
+Every returned order must belong to the requested customer.

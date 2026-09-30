@@ -1,0 +1,17 @@
+$ sqlite3 data/orders.db
+SQLite version 3.x
+sqlite> .headers on
+sqlite> .mode column
+sqlite> -- scalar-subquery reconciliation, run 1
+
+customers  orders  line_items  refunds  orphan_orders  statuses  null_rates  order_total_dollars
+---------  ------  ----------  -------  -------------  --------  ----------  -------------------
+2060       50000   125362      2806     394            7         7113        14183118.39
+
+sqlite> -- identical statement, run 2
+customers  orders  line_items  refunds  orphan_orders  statuses  null_rates  order_total_dollars
+---------  ------  ----------  -------  -------------  --------  ----------  -------------------
+2060       50000   125362      2806     394            7         7113        14183118.39
+
+PASS — one row, explicit dollar unit, identical results.
+LIMITATION — controls do not prove every row or business meaning is correct.

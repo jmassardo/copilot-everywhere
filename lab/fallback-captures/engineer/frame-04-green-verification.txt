@@ -1,0 +1,20 @@
+$ git diff --stat
+ sample-app/app/store.py         | 2 +-
+ sample-app/tests/test_orders.py | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+$ .venv/bin/python -m pytest -q \
+    tests/test_orders.py::test_list_orders_filters_by_customer
+.                                                               [100%]
+1 passed in 0.08s
+
+$ .venv/bin/python -m pytest -q
+.............                                                    [100%]
+13 passed in 0.39s
+
+$ .venv/bin/ruff check .
+All checks passed!
+
+PASS — requested customer ownership is asserted.
+PASS — production change is limited to the filter predicate.
+PASS — focused, full-suite, and lint verification are green.
