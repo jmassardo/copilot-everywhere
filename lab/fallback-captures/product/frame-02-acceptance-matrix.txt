@@ -1,0 +1,22 @@
+Discount-boundary PR — product acceptance map
+
+Subtotal   Required outcome   Before   After   Evidence       Status
+9,999      0%                 0%       0%      focused test   SATISFIED
+10,000     5%                 0%       5%      focused test   SATISFIED
+19,999     5%                 5%       5%      focused test   SATISFIED
+20,000     10%                5%       10%     focused test   SATISFIED
+49,999     10%                10%      10%     focused test   SATISFIED
+50,000     15%                10%      15%     focused test   SATISFIED
+
+Non-goals reviewed:
+PASS no rounding change
+PASS integer-cent money preserved
+PASS no API error or response-contract change
+PASS no unrelated refactor
+
+Verification:
+focused pricing tests passed
+full pytest suite passed
+Ruff passed
+
+ACCEPTED against observable customer outcomes.

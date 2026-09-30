@@ -256,7 +256,12 @@ track needs an authentic before/after comparison.
 
 ### 5. Prepare saved outputs
 
-Save screenshots or text for:
+Prepared screenshots and source frames are available in
+[`fallback-captures/`](fallback-captures/). The
+[`walkthrough`](fallback-captures/walkthrough.md) maps each capture to the
+exercise and review question.
+
+The package covers:
 
 - Engineer API reproduction;
 - Engineer blast-radius report;

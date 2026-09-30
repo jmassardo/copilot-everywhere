@@ -1,0 +1,21 @@
+Unconfigured refund planning — assumption audit
+
+Topic                  Agent choice             Repository evidence
+Error response         structured 4xx           CONFLICTING PRECEDENT
+Eligible status        paid orders              UNRESOLVED
+Partial refunds        allow                    UNRESOLVED
+Maximum amount         remaining order total    UNRESOLVED
+Idempotency            request key              UNRESOLVED
+Money representation   integer cents            CONFIRMED
+Authorization          order owner              UNRESOLVED
+Audit / retention      persist refund record    UNRESOLVED
+
+Evidence:
+- Orders use HTTPException with code/message.
+- Customers return error dictionaries with HTTP 200.
+- Application money fields use *_cents.
+- No refund route or approved refund contract exists.
+
+Conclusion:
+Only integer-cent money is inferable and consistent.
+The repository cannot safely choose the refund contract.

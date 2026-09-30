@@ -1,0 +1,19 @@
+INCIDENT-4552 — independent blast-radius review
+
+Path                              Safeguard / evidence              Result
+GET /orders?customer_id=...       store.list_orders predicate       CONFIRMED
+GET /orders/{order_id}            lookup by unique order ID         not affected
+POST /orders                      validates customer exists         not affected
+DELETE /orders/{order_id}         lookup then delete by order ID    not affected
+Customer deletion                 no ownership filter involved      separate risk
+
+Root cause hypothesis:
+app/store.py::list_orders excludes the requested customer.
+
+Test gap:
+tests/test_orders.py checks len(response.json()) == 1,
+but never checks response.json()[0]["customer_id"].
+
+Bounded statement:
+The filtered list endpoint reproduces cross-customer disclosure.
+Related order paths were reviewed; no second affected path was proven.

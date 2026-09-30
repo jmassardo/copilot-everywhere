@@ -1,0 +1,19 @@
+$ .venv/bin/python -m pytest -q \
+    tests/test_orders.py::test_list_orders_filters_by_customer
+F                                                               [100%]
+
+FAILED tests/test_orders.py::test_list_orders_filters_by_customer
+
+>       assert all(
+            order["customer_id"] == "cust-001"
+            for order in response.json()
+        )
+E       AssertionError: returned order belongs to cust-002
+
+Focused result: 1 failed
+Application files changed: none
+Test diff: ownership assertion only
+
+RED EVIDENCE CONFIRMED
+The failure is the reported customer-ownership violation,
+not a fixture, import, or syntax error.

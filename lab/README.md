@@ -74,6 +74,14 @@ Exercise 5 to its required deliverable.
 
 Complete [setup.md](setup.md) before the lab.
 
+## Facilitator fallbacks
+
+The facilitator package includes
+[saved evidence captures](fallback-captures/README.md) for the twelve live
+outputs most likely to be affected by tool availability or exercise timing.
+Participants should still review the evidence and make the persona-owned
+decision; the captures replace unavailable execution, not the exercise.
+
 ## Shared debrief
 
 Bring one artifact from your track:
