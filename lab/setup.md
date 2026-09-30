@@ -7,34 +7,88 @@ not package troubleshooting.
 
 | Track | Required |
 |---|---|
-| Engineer | VS Code with Copilot chat, agent mode, multiple sessions; GitHub access |
-| Platform | VS Code with agent mode and custom-agent support; GitHub access |
+| Engineer | VS Code with Copilot chat, agent mode, multiple sessions; GitHub access; Python 3.12 |
+| Platform | VS Code with agent mode and custom-agent support; GitHub access; Python 3.12 |
 | Product | Browser, GitHub account, Copilot on GitHub or Copilot app |
-| Data | VS Code with agent mode, Python, SQLite client |
+| Data | VS Code with agent mode, Python 3.12, SQLite client |
 
 Cloud coding agent access is strongly recommended for Engineer and Product.
 Facilitators provide completed fallback pull requests when it is unavailable or
 does not finish within the lab.
 
-## Repository setup
+## Install and verify Python
+
+Use **Python 3.12** for the lab. The lab environment has not been validated with
+Python 3.13 on Windows 11.
+
+Check the interpreter before creating the virtual environment:
+
+macOS or Linux:
 
 ```bash
-git clone https://github.com/jmassardo/copilot-everywhere.git
-cd copilot-everywhere/sample-app
+python3.12 --version
+```
 
-python3 -m venv .venv
+Windows PowerShell:
+
+```powershell
+py -3.12 --version
+```
+
+Expected:
+
+```text
+Python 3.12.x
+```
+
+If the command is not found, install Python 3.12 from
+[python.org](https://www.python.org/downloads/) and select **Add python.exe to
+PATH** in the Windows installer. Close and reopen VS Code after installation,
+then rerun the version command.
+
+## Repository and virtual-environment setup
+
+The presentation deck and saved captures make a full clone unnecessarily large
+for conference Wi-Fi. Participants should use this shallow sparse clone, which
+downloads only the lab instructions and sample application:
+
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/jmassardo/copilot-everywhere.git
+cd copilot-everywhere
+git sparse-checkout set lab sample-app
+cd sample-app
+
+python3.12 -m venv .venv
+.venv/bin/python --version
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-Windows PowerShell equivalents:
+The clone and sparse-checkout commands are the same in Windows PowerShell.
+Then run:
 
 ```powershell
-py -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe --version
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Fork the repository if your track needs to create issues, push branches, or
-delegate to a cloud coding agent.
+The version check must print:
+
+```text
+Python 3.12.x
+```
+
+If it reports another version, remove only the `sample-app/.venv` directory and
+recreate it with the Python 3.12 command above. Installing Python 3.12 does not
+change an existing virtual environment.
+
+If Git does not support the sparse-clone options or the clone stalls, do not
+retry a full clone on the conference network. Ask the facilitator for a
+prepared local copy and continue.
+
+Use a fork or training repository if your track needs to push branches or
+delegate to a cloud coding agent. The Engineer track uses a prepared timestamp
+issue and does not require students to create an issue.
 
 ## Verify the baseline
 
@@ -43,6 +97,13 @@ From `sample-app/`:
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/ruff check .
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check .
 ```
 
 Expected:
@@ -55,6 +116,27 @@ All checks passed!
 This baseline is intentionally green **and still contains a customer-isolation
 defect**. One lab objective is learning why a passing suite can verify the wrong
 thing. Do not “repair” `store.list_orders` during setup.
+
+### If setup still fails
+
+Do not spend the lab debugging Python installation problems. Copy the command
+you ran and its complete terminal output, give both to the facilitator, and use
+the prepared baseline or pair with someone whose environment works. Continue
+the track with that environment. Use the expected output below as a reference,
+not as a result from your machine:
+
+```text
+13 passed
+All checks passed!
+```
+
+On Windows, include the output of these diagnostics:
+
+```powershell
+py -0p
+py -3.12 --version
+.\.venv\Scripts\python.exe --version
+```
 
 ## Data track
 
@@ -74,7 +156,7 @@ Before class:
 
 - Open the repository in VS Code.
 - Start two separate chat sessions and confirm both remain available.
-- Confirm you can select Ask/Plan and Agent modes.
+- Confirm Agent mode is available.
 - If available, confirm the cloud coding agent can be assigned an issue in your
   fork.
 - Platform attendees: confirm custom agents and repository instructions are
@@ -102,6 +184,7 @@ Before class:
 ## Ready checklist
 
 - [ ] Correct persona track selected.
+- [ ] Python 3.12 is installed for Engineer, Platform, and Data tracks.
 - [ ] Repository or fork available.
 - [ ] Two VS Code chat sessions can run independently where required.
 - [ ] Agent picker works.

@@ -118,7 +118,7 @@ request is intentionally under-specified: there is no approved refund policy.
 
 1. Open Copilot Chat.
 2. Select **New Chat**.
-3. Select the normal **Agent** or **Plan** mode, not a custom agent.
+3. Select the normal **Agent** mode, not a custom agent.
 4. Name the session `Unconfigured refund planning` if possible.
 5. Paste:
 
@@ -256,7 +256,7 @@ Instructions are evaluated in new chat context.
 
 1. Save the file.
 2. Select **New Chat**.
-3. Select the normal **Agent** or **Plan** mode.
+3. Select the normal **Agent** mode.
 4. Name it `Instruction verification`.
 5. Ask:
 

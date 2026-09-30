@@ -101,7 +101,8 @@ From the repository root:
 
 ```bash
 cd sample-app
-python3 -m venv .venv
+python3.12 --version
+python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m pytest -q
 .venv/bin/ruff check .
@@ -112,12 +113,15 @@ sqlite3 data/orders.db "SELECT COUNT(*) FROM orders;"
 Expected:
 
 ```text
+Python 3.12.x
 13 passed
 All checks passed!
 50000
 ```
 
-On Windows, verify the equivalent `.venv\Scripts\python` commands.
+On Windows 11, verify `py -3.12 --version` and the equivalent
+`.\.venv\Scripts\python.exe` commands. Do not use Python 3.13 for the prepared
+lab environment.
 
 ### 2. Verify every seeded behavior
 
@@ -225,8 +229,9 @@ Prepare:
 
 - a customer-isolation incident issue from
   `talk/demo-assets/issues/customer-isolation-incident.md`;
-- a timestamp migration issue from
-  `talk/demo-assets/issues/timezone-migration.md`;
+- confirm the shared timestamp migration issue
+  [#16](https://github.com/jmassardo/copilot-everywhere/issues/16) is readable,
+  or prepare an equivalent issue in the training repository;
 - a discount-boundary issue from
   `talk/demo-assets/issues/discount-boundaries.md`;
 - a decision issue for refund behavior, marked blocked or `needs-human`;
@@ -284,7 +289,7 @@ should preserve the review exercise, not become a lecture.
 Before participants arrive:
 
 - Start two separate VS Code chat sessions.
-- Confirm Ask/Plan and Agent modes are available.
+- Confirm Agent mode is available and honors explicit read-only instructions.
 - Confirm workspace custom agents can be created or manually loaded.
 - Confirm repository and path-scoped instructions are recognized.
 - Confirm GitHub Copilot can access the training repository.
@@ -808,12 +813,14 @@ Do not broaden the issue to “make the agent try harder.”
 | Symptom | Likely cause | Facilitator action |
 |---|---|---|
 | `.venv/bin/python` not found | Setup incomplete or wrong folder | Complete setup and confirm terminal is in `sample-app/` |
+| Python commands fail on Windows 11 | Wrong interpreter or stale virtual environment | Capture `py -0p`, `py -3.12 --version`, and the failing command output; move the participant to a prepared Python 3.12 baseline or pair |
+| Clone stalls on conference Wi-Fi | Full repository includes presentation and capture assets | Use the shallow sparse-clone command from `lab/setup.md` or provide a prepared local copy |
 | Tests fail before work begins | Dirty or incorrect baseline | Move to prepared clean branch; do not debug unrelated work in lab time |
 | Incident does not reproduce | Baseline contains corrected filter | Use prepared incident fixture or saved evidence |
 | Custom agent not listed | Wrong path, invalid frontmatter, stale window | Check `.github/agents/*.agent.md`, save, reload window |
 | Instructions not referenced | Wrong `.github` location or old session | Move to repository root, save, start fresh chat |
 | Scoped rules apply everywhere | Missing or incorrect `applyTo` | Correct frontmatter and restart chat |
-| GitHub issue controls unavailable | Read-only repository or plan limitation | Use fork, partner, or prepared issue |
+| GitHub issue controls unavailable | Read-only repository or plan limitation | Open prepared #16; have the facilitator or an authorized participant perform assignment |
 | Cloud task never completes | Queue or entitlement | Switch to fallback PR at review time |
 | SQLite cannot open database | Wrong directory or database not built | `cd sample-app`, then run `data/build_db.py` |
 | Data counts differ | Database changed or fan-out query | Rebuild database; rerun scalar-subquery reconciliation |

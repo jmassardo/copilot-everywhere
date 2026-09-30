@@ -78,7 +78,8 @@ Exercise 5 to its required deliverable.
 1. Work on a branch or fork, never directly on `main`.
 2. Use synthetic data and non-production systems only.
 3. Keep independent questions in independent sessions.
-4. Start with read-only/planning agents when the problem is not yet understood.
+4. Start with explicit read-only instructions when the problem is not yet
+   understood.
 5. Delegate asynchronously only when scope and verification are explicit.
 6. Review outputs at the level your persona owns.
 7. A green agent summary is not evidence; point to the test, diff, query plan,

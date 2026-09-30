@@ -78,7 +78,7 @@ can coexist with a serious defect when the important invariant is missing.
 
 ### Session: Incident investigation
 
-Select a planning/read-only agent:
+Start a fresh Copilot chat and explicitly keep it read-only:
 
 > Investigate #2 without editing files. Trace the filtered orders request from
 > the router to storage. Give me a minimal API-level reproduction and identify
