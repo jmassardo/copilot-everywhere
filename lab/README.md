@@ -6,6 +6,20 @@
 
 ---
 
+## Facilitator presentation
+
+Use [`copilot-everywhere-persona-labs.pptx`](copilot-everywhere-persona-labs.pptx)
+to set the stage, introduce track selection and operating rules, walk through
+each exercise, and run the shared debrief. The deck embeds the prepared
+fallback captures where evidence review is part of the exercise.
+
+To rebuild the deck after changing lab content:
+
+```bash
+python -m pip install python-pptx Pillow
+python lab/build_presentation.py
+```
+
 ## Pick one track
 
 | Track | You are | Primary Copilot workflow |
