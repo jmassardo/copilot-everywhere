@@ -1,0 +1,31 @@
+{
+  "name": "Copilot Everywhere Lab",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-python.python"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/sample-app/.venv/bin/python",
+        "python.terminal.activateEnvironment": true
+      }
+    }
+  },
+  "postCreateCommand": "python -m venv sample-app/.venv && sample-app/.venv/bin/python -m pip install --upgrade pip && sample-app/.venv/bin/python -m pip install -r sample-app/requirements.txt",
+  "remoteEnv": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb",
+    "storage": "16gb"
+  }
+}

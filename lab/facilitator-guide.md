@@ -95,6 +95,24 @@ learning objective.
 Complete these steps on the same operating systems, editor versions, and
 GitHub environment participants will use.
 
+### 0. Verify the Codespaces path
+
+Create a new Codespace from the exact branch each track will use. Wait for the
+dev-container setup to finish, then verify:
+
+```bash
+cd sample-app
+.venv/bin/python --version
+.venv/bin/python -m pytest -q
+.venv/bin/python -m ruff check .
+sqlite3 --version
+```
+
+For Engineer attendees, create the Codespace from the prepared
+incident-fixture branch and run the API reproduction from the Engineer track.
+A Codespace from `main` has a green baseline but does not reproduce the seeded
+customer-isolation incident.
+
 ### 1. Verify local dependencies
 
 From the repository root:
