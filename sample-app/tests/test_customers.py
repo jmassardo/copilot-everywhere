@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -18,8 +20,14 @@ def client():
 
 
 def test_list_customers_returns_seeded_customers(client):
-    body = client.get("/customers").json()
-    assert len(body["customers"]) == 2
+    for _ in range(3):
+        body = client.get("/customers").json()
+        assert len(body["customers"]) == 2
+        assert all(
+            datetime.fromisoformat(customer["created_at"]).utcoffset() == timedelta(0)
+            for customer in body["customers"]
+        )
+        store.reset()
 
 
 def test_get_customer_returns_customer(client):
@@ -38,7 +46,9 @@ def test_create_customer_succeeds(client):
     response = client.post(
         "/customers", json={"email": "new@example.com", "name": "New Person"}
     )
-    assert response.json()["email"] == "new@example.com"
+    body = response.json()
+    assert body["email"] == "new@example.com"
+    assert datetime.fromisoformat(body["created_at"]).utcoffset() == timedelta(0)
 
 
 def test_create_duplicate_email_returns_error_body(client):

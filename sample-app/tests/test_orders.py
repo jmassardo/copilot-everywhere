@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -31,6 +33,7 @@ def test_create_order_returns_201(client):
     assert body["customer_id"] == "cust-001"
     assert body["status"] == "pending"
     assert len(body["items"]) == 2
+    assert datetime.fromisoformat(body["created_at"]).utcoffset() == timedelta(0)
 
 
 def test_create_order_unknown_customer_returns_400(client):

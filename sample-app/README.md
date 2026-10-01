@@ -49,10 +49,11 @@ tests/
 | 2 | Discount tier boundary is exclusive (`>` not `>=`) | `pricing.discount_rate_for` | Product |
 | 3 | Money truncated via `int()` on floats | `pricing.calculate_totals` | Product, Data |
 | 4 | Zero test coverage for pricing | no `tests/test_pricing.py` | Product |
-| 5 | Deprecated `datetime.utcnow()` in 3 files | `store.py`, both routers | Engineer, Platform |
 | 6 | `UP` lint rule disabled, 6 violations waiting | `pyproject.toml` | Optional extension |
 | 7 | No Copilot configuration at all | repo root | Platform track |
 | 8 | Customer filter returns another customer's orders while the weak test stays green | `store.list_orders`, `test_list_orders_filters_by_customer` | Engineer track |
+
+Seam 5 was resolved in #3 by making customer and order timestamps timezone-aware UTC.
 
 ### Seam 2, demonstrated
 
