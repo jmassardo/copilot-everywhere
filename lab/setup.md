@@ -16,6 +16,45 @@ Cloud coding agent access is strongly recommended for Engineer and Product.
 Facilitators provide completed fallback pull requests when it is unavailable or
 does not finish within the lab.
 
+## Recommended: GitHub Codespaces
+
+Codespaces provides the lab's Python 3.12 environment, SQLite command-line
+client, dependencies, and VS Code extensions without installing them locally.
+
+1. Open the training repository or your fork on GitHub.
+2. Select **Code > Codespaces > Create codespace**.
+3. Wait for the `postCreateCommand` to finish in the terminal.
+4. Open a terminal and run:
+
+```bash
+cd sample-app
+.venv/bin/python --version
+.venv/bin/python -m pytest -q
+.venv/bin/python -m ruff check .
+sqlite3 --version
+```
+
+Expected:
+
+```text
+Python 3.12.x
+13 passed
+All checks passed!
+```
+
+The SQLite command prints its installed version.
+
+Engineer attendees must create the Codespace from the facilitator-provided
+incident-fixture branch, not `main`. The current `main` branch does not contain
+the intentionally incorrect customer filter required to reproduce the
+incident. Platform and Data attendees can start from `main`. Product attendees
+may work entirely in GitHub.com and do not need a Codespace.
+
+If the Codespace cannot be created because of account, organization, or quota
+restrictions, use the local setup below or a facilitator-provided environment.
+
+## Local setup
+
 ## Install and verify Python
 
 Use **Python 3.12** for the lab. The lab environment has not been validated with
