@@ -66,8 +66,8 @@ macOS or Linux:
 Windows PowerShell:
 
 ```powershell
-.venv\Scripts\python -m pytest -q
-.venv\Scripts\ruff check .
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check .
 ```
 
 Expected:
@@ -80,8 +80,20 @@ All checks passed!
 Warnings about `datetime.utcnow()` are expected and belong to a later,
 independent maintenance task.
 
-If tests or lint fail, stop and ask the facilitator for the prepared baseline.
-A red baseline makes later red/green evidence unreliable.
+If Python, tests, or lint fail, do not spend exercise time repairing the
+environment. Copy the command and its complete terminal output and give both to
+the facilitator. On Windows, also run and copy:
+
+```powershell
+py -0p
+py -3.12 --version
+.\.venv\Scripts\python.exe --version
+```
+
+Then use the facilitator's prepared baseline or pair with someone whose
+environment works and continue to Step 4. Treat the expected output above as
+the baseline; do not claim that the checks passed on your machine. A red or
+unavailable local baseline cannot provide reliable red/green evidence later.
 
 ### 4. Know the Copilot controls used in this lab
 
@@ -89,14 +101,15 @@ VS Code wording varies slightly by version:
 
 1. Select the **Chat** or **Copilot** icon in the Activity Bar.
 2. Select **New Chat** (`+`) to create an independent session.
-3. Use the mode picker near the chat input:
-   - Use **Ask** or **Plan** for read-only investigation.
-   - Use **Agent** only when the exercise explicitly allows edits or commands.
-4. Review every file edit and terminal command before accepting it.
-5. Keep each named session separate. Do not paste both investigation jobs into
+3. Select **Agent** mode. Current VS Code versions may not show separate Ask or
+   Plan modes.
+4. For investigation sessions, state `Do not edit files` in the prompt and
+   reject any proposed edit or write command.
+5. Review every file edit and terminal command before accepting it.
+6. Keep each named session separate. Do not paste both investigation jobs into
    one chat.
 
-You do not need a custom agent. The regular local Copilot modes are sufficient.
+You do not need a custom agent. The regular local Copilot agent is sufficient.
 
 ### 5. Confirm the incident fixture is available
 
@@ -149,8 +162,7 @@ share assumptions.
 
 1. Open Copilot Chat.
 2. Select **New Chat**.
-3. Select **Ask** or **Plan** mode. If only Agent mode is available, explicitly
-   forbid edits.
+3. Select **Agent** mode.
 4. Name the session `Incident reproduction` if session naming is available.
 5. Paste:
 
@@ -178,7 +190,7 @@ hypothesis, and missing test invariant.
 Without waiting for the first session:
 
 1. Select **New Chat** again.
-2. Select **Ask** or **Plan** mode.
+2. Select **Agent** mode.
 3. Name the session `Isolation blast radius`.
 4. Paste:
 
@@ -267,9 +279,17 @@ The test must:
 
 Explain which assertion catches the escaped defect and why the existing count
 assertion does not. Do not edit files.
+
+End with a standalone block titled TEST SPECIFICATION containing only:
+- target test file and test name;
+- setup records;
+- request;
+- required assertions; and
+- the ownership mismatch expected before the fix.
 ```
 
-Copy the resulting specification, not the entire conversation.
+Copy only the `TEST SPECIFICATION` block. Do not copy the investigation
+transcript, explanations outside that block, or proposed production changes.
 
 ### Step 2: Hand the specification to an implementation session
 
@@ -359,9 +379,9 @@ macOS or Linux:
 Windows PowerShell:
 
 ```powershell
-.venv\Scripts\python -m pytest -q tests/test_orders.py
-.venv\Scripts\python -m pytest -q
-.venv\Scripts\ruff check .
+.\.venv\Scripts\python.exe -m pytest -q tests/test_orders.py
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check .
 ```
 
 Expected:
@@ -393,38 +413,22 @@ The incident response is local and urgent. A separate timestamp migration is
 well-specified enough to run asynchronously, but you must assess overlap before
 delegating it.
 
-### Step 1: Open or create the timestamp issue
+### Step 1: Open the prepared timestamp issue
 
-If the facilitator supplied an issue named **Replace deprecated naive UTC
-timestamps**, open it. Otherwise:
+Open the shared training issue:
+[`Replace deprecated naive UTC timestamps`](https://github.com/jmassardo/copilot-everywhere/issues/16).
 
-1. Open the repository on GitHub.
-2. Select **Issues > New issue**.
-3. Use the title `Replace deprecated naive UTC timestamps`.
-4. Paste:
+Students do not need permission to create repository issues. Read #16 and
+confirm that it contains:
 
-```markdown
-## Problem
+- the `datetime.utcnow()` problem statement;
+- timezone-aware UTC acceptance criteria;
+- response-compatibility and verification requirements; and
+- non-goals for dependencies, pricing, generated data, and API error behavior.
 
-Application code uses `datetime.utcnow()`, which produces naive datetime
-values and is deprecated in current Python.
-
-## Acceptance criteria
-
-- Replace application uses with timezone-aware UTC values.
-- Preserve existing API field names and response structure.
-- Add or adjust focused tests if serialized values change.
-- Run the full pytest suite and Ruff.
-
-## Non-goals
-
-- Do not change dependencies.
-- Do not change pricing behavior.
-- Do not modify generated analytics data.
-- Do not standardize unrelated API error behavior.
-```
-
-Do not add broader datetime cleanup that the issue cannot verify.
+Record the issue URL. Do not create a duplicate or add broader datetime cleanup
+that the issue cannot verify. If #16 is unavailable, use the facilitator's
+prepared copy of the same issue text.
 
 ### Step 2: Compare scope before parallelizing
 
@@ -453,17 +457,19 @@ yet. Finish or narrow the incident change first.
 GitHub labels and buttons vary by organization:
 
 1. Open the timestamp issue.
-2. Use the issue's **Assignees** or **Develop with Copilot** control.
-3. Assign the GitHub Copilot coding agent.
-4. Confirm that the issue contains the acceptance criteria, non-goals, and
+2. Confirm that the issue contains the acceptance criteria, non-goals, and
    verification commands before starting.
+3. If you have assignment permission, use **Assignees** or **Develop with
+   Copilot** to assign the GitHub Copilot coding agent.
+4. Otherwise, give the issue URL to the facilitator or designated participant,
+   who performs the assignment while you observe.
 5. Wait only until GitHub shows that the task was accepted or started.
 6. Record the issue or task link.
 7. Return to VS Code. Do not repeatedly refresh the cloud task.
 
-If cloud coding agents are unavailable, give the issue to a facilitator or
-another attendee to run in a separate coding-agent session. You will review a
-prepared fallback pull request in Exercise 5.
+If assignment or cloud coding agents are unavailable, the facilitator runs #16
+in a separate local coding-agent session or supplies the prepared fallback pull
+request. Continue to Exercise 4; issue permissions are not a learning objective.
 
 **Checkpoint:** The timestamp task is running asynchronously, and you recorded
 why its scope is safe enough to proceed alongside the now-bounded incident
@@ -499,7 +505,7 @@ Do not include unrelated chat speculation.
 ### Step 2: Start a reviewer session
 
 1. Select **New Chat**.
-2. Select **Ask** or **Plan** mode.
+2. Select **Agent** mode and keep the prompt read-only.
 3. Name it `Incident review`.
 4. Paste:
 
