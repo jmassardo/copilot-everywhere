@@ -63,7 +63,20 @@ def test_list_orders_filters_by_customer(client):
     client.post("/orders", json={"customer_id": "cust-002", "items": _items()})
 
     assert len(client.get("/orders").json()) == 2
-    assert len(client.get("/orders", params={"customer_id": "cust-002"}).json()) == 1
+    filtered_orders = client.get("/orders", params={"customer_id": "cust-001"}).json()
+    assert filtered_orders
+    assert all(order["customer_id"] == "cust-001" for order in filtered_orders)
+
+    customer_without_orders = client.post(
+        "/customers", json={"email": "empty@example.com", "name": "Empty Customer"}
+    ).json()
+    assert (
+        client.get(
+            "/orders", params={"customer_id": customer_without_orders["id"]}
+        ).json()
+        == []
+    )
+    assert client.get("/orders", params={"customer_id": "cust-unknown"}).json() == []
 
 
 def test_delete_order_returns_204(client):
