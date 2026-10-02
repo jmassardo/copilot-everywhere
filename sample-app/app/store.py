@@ -4,7 +4,7 @@ Deliberately simple: no database, no migrations, no async. The interesting
 parts of this codebase are the seams, not the storage.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 
 from app.models import Customer, Order
@@ -26,7 +26,7 @@ def seed() -> None:
             email="mona@example.com",
             name="Mona Lisa",
             tier="standard",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
     )
     save_customer(
@@ -35,7 +35,7 @@ def seed() -> None:
             email="hubot@example.com",
             name="Hubot",
             tier="enterprise",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
     )
 
