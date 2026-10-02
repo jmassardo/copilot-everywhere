@@ -7,7 +7,7 @@ this repo has no way to know which one you actually want.
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter
 
@@ -44,7 +44,7 @@ def create_customer(payload: CustomerCreate):
             email=payload.email,
             name=payload.name,
             tier=payload.tier,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(UTC),
         )
     )
     return customer.model_dump()
