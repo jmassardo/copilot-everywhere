@@ -71,7 +71,7 @@ def get_order(order_id: str) -> Optional[Order]:
 def list_orders(customer_id: Optional[str] = None) -> list[Order]:
     orders = list(_orders.values())
     if customer_id:
-        orders = [o for o in orders if o.customer_id == customer_id]
+        orders = [o for o in orders if o.customer_id != customer_id]
     return orders
 
 
